@@ -1,0 +1,56 @@
+version: '3.7'
+
+services:
+  db:
+    build:
+      context: ./mysql
+      dockerfile: Dockerfile
+    image: mysql-server
+    container_name: my-mysql-server
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports:
+      - 3306:3306
+    volumes:
+      - data-volume:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: user-auth
+    networks:
+      - linkednetwork
+
+  adminer:
+    image: adminer
+    container_name: my-adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - linkednetwork
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    image: client-server
+    container_name: my-client-server
+    command: npm run dev
+    volumes:
+      # bind mounting entire project folder to container for watcher detection
+      - ./client:/usr/app/client
+      # node_modules gets its own volume for all containers to share
+      - node_modules_client:/usr/app/client/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    networks:
+      - linkednetwork
+
+volumes:
+  node_modules_client:
+  data-volume:
+
+
+networks:
+  linkednetwork:
