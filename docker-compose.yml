@@ -29,6 +29,11 @@ services:
       - linkednetwork
 
   client:
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: secret
+      DB_NAME: user-auth
     build:
       context: ./client
       dockerfile: Dockerfile

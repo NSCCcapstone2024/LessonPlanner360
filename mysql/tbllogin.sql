@@ -35,10 +35,10 @@ CREATE TABLE `tblLogin` (
 --
 -- Dumping data for table `tblLogin`
 --
--- password = test
+-- password = ryan: secret, victoria: hello
 INSERT INTO `tblLogin` (`username`, `password`, `salt`) VALUES
-('user', 'uLzOc9hqo47A75r1r9TE3ZctD3qmWEA4oQip4zfpgMg=', 'KUgMBBIZbPDsMiGUOc1UvQ=='),
-('victoria', 'BGiogj+634vjrzZskE8UkQLpOMtQtbNY4yRpDoKkZBQ=','5oyQOm8lAsCo4iqjtyYZcQ==');
+('ryan', '472fa2f9532d1d3f3ec1e48faf90cdc12b5892f17ec92d006cc9ea6e258af600', 'KUgMBBIZbPDsMiGUOc1UvQ=='),
+('victoria', '999c0fada31e9b908b37eaa366e182cb1d9783d9d80824cdc1005a5e838ef5ee','5oyQOm8lAsCo4iqjtyYZcQ==');
 
 
 --
