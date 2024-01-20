@@ -7,5 +7,8 @@
     "setup": "npm install --prefix ./client"
   },
   "author": "Sean Morrow",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "mysql2": "^3.7.1"
+  }
 }
