@@ -4,6 +4,20 @@ import crypto from 'crypto';
 export default async function handler(request, response) {
     if (request.method == 'POST') {
         try {
+
+            // get the username and password from the submitted form and sanitize by trimming whitespaces
+            let { username, password } = request.body;
+            username = username.trim();
+            password = password.trim();
+
+            // validate the username and password
+            if (!username || !password) {
+                return response.status(400).json({ message: 'Username and password are required' });
+            }
+            if (username.length > 45 || password.length > 200) {
+                return response.status(400).json({ message: 'Username or password too long' });
+            }
+
             // Connect to the database, get the credentials from the evnironment variables
             const connection = await mysql.createConnection({
                 host: process.env.DB_HOST,
@@ -12,10 +26,8 @@ export default async function handler(request, response) {
                 database: process.env.DB_NAME
             });
 
-            // get the username and password from the submitted form
-            let { username, password } = request.body;
-
             // get the password and salt from the database for the provided username
+            // use parameterized query
             let query = 'SELECT password, salt FROM tblLogin WHERE username = ?';
             let [rows] = await connection.execute(query, [username]);
 
