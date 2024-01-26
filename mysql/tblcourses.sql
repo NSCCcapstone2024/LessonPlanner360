@@ -25,7 +25,8 @@ SET time_zone = "+00:00";
 CREATE TABLE `tblCourses` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `course_code` varchar(200) NOT NULL,
-  `course_name` varchar(200) NOT NULL
+  `course_name` varchar(200) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -40,11 +41,6 @@ INSERT INTO `tblCourses` (`id`, `course_code`, `course_name`) VALUES
 ('5', 'INFT2100','Project Management');
 
 
---
--- Indexes for table `tblCourses`
---
-ALTER TABLE `tblCourses`
-  ADD PRIMARY KEY (`id`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

@@ -23,11 +23,11 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `tblLogin` (
-  `username` varchar(45) NOT NULL,
-  `password` varchar(200) NOT NULL,
-  `salt` varchar(200) NOT NULL
+  `username` VARCHAR(45) NOT NULL,
+  `password` VARCHAR(200) NOT NULL,
+  `salt` VARCHAR(200) NOT NULL,
+  PRIMARY KEY (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
 --
 -- Dumping data for table `tblLogin`
 --
@@ -37,11 +37,6 @@ INSERT INTO `tblLogin` (`username`, `password`, `salt`) VALUES
 ('victoria', '999c0fada31e9b908b37eaa366e182cb1d9783d9d80824cdc1005a5e838ef5ee','5oyQOm8lAsCo4iqjtyYZcQ==');
 
 
---
--- Indexes for table `tblLogin`
---
-ALTER TABLE `tblLogin`
-  ADD PRIMARY KEY (`username`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

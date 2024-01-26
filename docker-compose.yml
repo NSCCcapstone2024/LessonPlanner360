@@ -15,7 +15,7 @@ services:
       - data-volume:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: user-auth
+      MYSQL_DATABASE: capstone
     networks:
       - linkednetwork
 
@@ -33,7 +33,7 @@ services:
       DB_HOST: db
       DB_USER: root
       DB_PASSWORD: secret
-      DB_NAME: user-auth
+      DB_NAME: capstone
     build:
       context: ./client
       dockerfile: Dockerfile
