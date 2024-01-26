@@ -47,7 +47,7 @@ export default function Login() {
 
     return (
         <div className="min-h-screen flex items-center justify-center">
-            <form onSubmit={handleLogin} className="bg-white p-8 shadow-md rounded-md w-96">
+            <form onSubmit={handleLogin} method="POST" className="bg-white p-8 shadow-md rounded-md w-96">
                 <h2 className="text-2xl font-semibold mb-6">Login</h2>
 
                 <div className="mb-4">
@@ -59,7 +59,7 @@ export default function Login() {
                         id="username"
                         name="username"
                         className="mt-1 p-2 w-full border rounded-md"
-                        required
+                        required maxLength={45}
                     />
                 </div>
 
@@ -72,7 +72,7 @@ export default function Login() {
                         id="password"
                         name="password"
                         className="mt-1 p-2 w-full border rounded-md"
-                        required
+                        required maxLength={200}
                     />
                 </div>
 
