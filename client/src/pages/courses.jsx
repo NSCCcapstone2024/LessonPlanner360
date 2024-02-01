@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 
 export default function Courses() {
     const [courses, setCourses] = useState([]);
@@ -7,6 +8,8 @@ export default function Courses() {
         courseName: '',
         courseCode: ''
     });
+
+    const router = useRouter();
 
     useEffect(() => {
         fetchCourses();
@@ -26,6 +29,10 @@ export default function Courses() {
         }
     };
 
+    const handleLogout = () => {
+        router.push('/login');
+    };
+
     const handleAddCourse = () => {
         setIsPopupOpen(true);
     };
@@ -37,34 +44,6 @@ export default function Courses() {
             [name]: value
         }));
     };
-
-    // const handleAddNewCourse = async () => {
-    //     try {
-    //         const response = await fetch('/api/add-course', {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json'
-    //             },
-    //             body: JSON.stringify(newCourse)
-    //         });
-
-    //         if (response.ok) {
-    //             // If the course was successfully added, fetch the updated list of courses
-    //             await fetchCourses();
-    //         } else {
-    //             console.error('Failed to add course');
-    //         }
-    //     } catch (error) {
-    //         console.error('Error adding course:', error);
-    //     }
-
-    //     // Reset input fields and close the popup
-    //     setNewCourse({
-    //         courseName: '',
-    //         courseCode: ''
-    //     });
-    //     setIsPopupOpen(false);
-    // };
 
     const handleAddNewCourse = async () => {
         try {
@@ -95,16 +74,17 @@ export default function Courses() {
     };
 
     return (
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 pt-8">
             <div className="flex items-center justify-between mb-4">
                 <p className="text-2xl font-bold">This is the courses page!</p>
                 <div className="flex items-center">
-                    <svg onClick={handleAddCourse} xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500 cursor-pointer mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded-md ml-2">Logout</button>
+                    <svg onClick={handleAddCourse} xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500 cursor-pointer ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                 </div>
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {courses.map((course, index) => (
                     <div key={index} className="relative bg-gray-100 p-4 rounded-lg">
                         <p className="text-lg font-semibold">{course.course_code}</p>
@@ -131,9 +111,6 @@ export default function Courses() {
                     </div>
                 </div>
             )}
-
         </div>
     );
-
-
 }
