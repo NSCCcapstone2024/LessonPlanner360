@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { Icon } from '@iconify-icon/react';
 
 export default function Courses() {
     const [courses, setCourses] = useState([]);
@@ -88,16 +89,32 @@ export default function Courses() {
                 <p className="text-2xl font-bold">Welcome {username} ! </p>
                 <div className="flex items-center">
                     <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded-md ml-2">Logout</button>
-                    <svg onClick={handleAddCourse} xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500 cursor-pointer ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
+                    <div title="Add a new course">
+                        <svg onClick={handleAddCourse} xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500 cursor-pointer ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" title="Add a new course">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                    </div>
                 </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {courses.map((course, index) => (
                     <div key={index} className="relative bg-gray-100 p-4 rounded-lg">
-                        <p className="text-lg font-semibold">{course.course_code}</p>
-                        <p className="text-gray-800">{course.course_name}</p>
+                        <div className="flex justify-between items-center mb-4">
+                            <div>
+                                <p className="text-lg font-semibold">{course.course_code}</p>
+                                <p className="text-gray-800">{course.course_name}</p>
+                            </div>
+                            {/* Edit and Archive icons */}
+                            <div className="flex items-center">
+                                <div className="flex-grow" title='Edit Course'>
+                                    <Icon icon="ci:edit-pencil-line-01" width="24" height="24" className=" cursor-pointer" />
+                                </div>
+                                <div className="w-px h-6 bg-gray-400 mx-2"></div>
+                                <div className="flex-grow" title='Archive course'>
+                                    <Icon icon="fluent:archive-arrow-back-16-regular" width="24" height="24" className="text-red-500 cursor-pointer" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 ))}
             </div>
