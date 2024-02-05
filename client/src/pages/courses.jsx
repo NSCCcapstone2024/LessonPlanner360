@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 
 export default function Courses() {
     const [courses, setCourses] = useState([]);
+    const [username, setUsername] = useState('');
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [newCourse, setNewCourse] = useState({
         courseName: '',
@@ -12,8 +13,16 @@ export default function Courses() {
     const router = useRouter();
 
     useEffect(() => {
+        // Get the username 
+        let storedUsername = localStorage.getItem('username');
+        if (storedUsername) {
+            setUsername(storedUsername);
+        }
+
+
         fetchCourses();
     }, []);
+
 
     const fetchCourses = async () => {
         try {
@@ -76,7 +85,7 @@ export default function Courses() {
     return (
         <div className="container mx-auto px-4 pt-8">
             <div className="flex items-center justify-between mb-4">
-                <p className="text-2xl font-bold">This is the courses page!</p>
+                <p className="text-2xl font-bold">Welcome {username} ! </p>
                 <div className="flex items-center">
                     <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded-md ml-2">Logout</button>
                     <svg onClick={handleAddCourse} xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500 cursor-pointer ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

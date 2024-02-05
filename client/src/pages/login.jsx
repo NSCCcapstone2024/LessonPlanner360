@@ -38,6 +38,9 @@ export default function Login() {
         });
         // if the credentials are correct, it'll redirect to the "courses" page.
         if (response.ok) {
+            const data = await response.json();
+            // Save the username for later use
+            localStorage.setItem('username', username);
             router.push('/courses');
             // if not, it'll show an error.
         } else {
