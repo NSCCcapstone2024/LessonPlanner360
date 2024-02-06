@@ -1,48 +1,47 @@
 import mysql from 'mysql2/promise';
 
 export default async function handler(request, response) {
-    if (request.method === 'GET') {
-        try {
-            // Connect to the database, get the credentials from the evnironment variables
-            const connection = await mysql.createConnection({
-                host: process.env.DB_HOST,
-                user: process.env.DB_USER,
-                password: process.env.DB_PASSWORD,
-                database: process.env.DB_NAME
-            });
+    const { query: { course_code } } = request;
 
-            // get the course name and course code from the database
-            let [rows] = await connection.execute('SELECT course_code, course_name FROM tblCourses');
-            await connection.end();
+    let connection;
+    try {
+        connection = await mysql.createConnection({
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME,
+        });
 
-            response.status(200).json(rows);
-        } catch (error) {
-            console.error(error);
-            response.status(500).json({ message: 'Error fetching courses' });
+        if (request.method === 'GET') {
+            // If a course_code query parameter is provided, check for its uniqueness
+            if (course_code) {
+                const [rows] = await connection.execute('SELECT id FROM tblCourses WHERE course_code = ?', [course_code]);
+                return response.json({ isUnique: rows.length === 0 });
+            }
+
+            // Otherwise, fetch all courses
+            const [rows] = await connection.execute('SELECT id, course_code, course_name FROM tblCourses');
+            return response.status(200).json(rows);
+        } else if (request.method === 'POST') {
+            const { course_code, course_name } = request.body;
+
+            // Ensure course_code is unique before adding a new course
+            const [existingCourses] = await connection.execute('SELECT id FROM tblCourses WHERE course_code = ?', [course_code]);
+            if (existingCourses.length > 0) {
+                return response.status(400).json({ message: 'Course code must be unique.' });
+            }
+
+            // Insert the new course into the database
+            await connection.execute('INSERT INTO tblCourses (course_code, course_name) VALUES (?, ?)', [course_code, course_name]);
+            return response.status(201).json({ message: 'Course added successfully' });
+        } else {
+            response.setHeader('Allow', ['GET', 'POST']);
+            return response.status(405).end(`Method ${request.method} Not Allowed`);
         }
-    } else if (request.method === 'POST') {
-        try {
-            // Connect to the database, get the credentials from the evnironment variables
-            const connection = await mysql.createConnection({
-                host: process.env.DB_HOST,
-                user: process.env.DB_USER,
-                password: process.env.DB_PASSWORD,
-                database: process.env.DB_NAME
-            });
-
-            // get the course name and course code from the request body
-            const { courseCode, courseName } = request.body;
-
-            // insert the new course into the database
-            await connection.execute('INSERT INTO tblCourses (course_code, course_name) VALUES (?, ?)', [courseCode, courseName]);
-            await connection.end();
-
-            response.status(201).json({ message: 'Course added successfully' });
-        } catch (error) {
-            console.error(error);
-            response.status(500).json({ message: 'Error adding course' });
-        }
-    } else {
-        response.status(405).end();
+    } catch (error) {
+        console.error(error);
+        return response.status(500).json({ message: 'Error processing request' });
+    } finally {
+        if (connection) await connection.end();
     }
 }

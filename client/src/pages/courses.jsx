@@ -3,28 +3,23 @@ import { useRouter } from 'next/router';
 import { Icon } from '@iconify-icon/react';
 
 export default function Courses() {
+    const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
+    const [editingCourse, setEditingCourse] = useState(null);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [courseCode, setCourseCode] = useState('');
+    const [isUnique, setIsUnique] = useState(true);
     const [courses, setCourses] = useState([]);
     const [username, setUsername] = useState('');
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [newCourse, setNewCourse] = useState({
-        courseName: '',
-        courseCode: ''
+        course_name: '',
+        course_code: ''
     });
 
     const router = useRouter();
 
-    useEffect(() => {
-        // Get the username 
-        let storedUsername = localStorage.getItem('username');
-        if (storedUsername) {
-            setUsername(storedUsername);
-        }
-
-
-        fetchCourses();
-    }, []);
-
-
+    //---------------------FETCH functions---------------------
+    // Fetch the list of courses from the server
     const fetchCourses = async () => {
         try {
             const response = await fetch('/api/courses');
@@ -39,12 +34,73 @@ export default function Courses() {
         }
     };
 
+    useEffect(() => {
+        // Get the username to display in welcome message
+        let storedUsername = localStorage.getItem('username');
+        if (storedUsername) {
+            setUsername(storedUsername);
+        }
+        fetchCourses();
+    }, []);
+
+    // check if the course code is unique
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (courseCode.trim() !== '') {
+                fetch(`/api/courses?course_code=${encodeURIComponent(courseCode)}`)
+                    .then(res => res.json())
+                    .then(data => setIsUnique(data.isUnique))
+                    .catch(err => console.error(err));
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [courseCode]);
+
+    // logout function
     const handleLogout = () => {
         router.push('/login');
     };
 
+    //---------------------ADD funcitons---------------------
+
     const handleAddCourse = () => {
         setIsPopupOpen(true);
+        setErrorMessage('');
+    };
+
+    // event handler for adding a new course
+    const handleAddNewCourse = async () => {
+        // VALIDATION- Check if either field is empty and set an error message if so
+        if (!newCourse.course_code.trim() || !newCourse.course_name.trim()) {
+            setErrorMessage('Both course code and course name are required.');
+            return;
+        }
+        try {
+            const response = await fetch('/api/courses', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    course_code: newCourse.course_code,
+                    course_name: newCourse.course_name
+                }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                // If the course was successfully added, reset the form and fetch the updated list of courses
+                setNewCourse({ course_code: '', course_name: '' }); // Reset the form fields
+                setIsPopupOpen(false);
+                setErrorMessage('');
+                fetchCourses();
+            } else {
+                // If there's a problem with adding the course, show the error message
+                setErrorMessage(data.message || 'Failed to add the course.');
+            }
+        } catch (error) {
+            console.error('Error adding course:', error);
+            setErrorMessage('An error occurred while adding the course.');
+        }
     };
 
     const handleInputChange = (e) => {
@@ -53,34 +109,79 @@ export default function Courses() {
             ...prevState,
             [name]: value
         }));
+        if (name === 'course_code') {
+            // check for uniqueness and clear error message
+            setCourseCode(value);
+            setErrorMessage('');
+        }
     };
 
-    const handleAddNewCourse = async () => {
+
+    // Close add popup - reset everything
+    const closePopupAndResetForm = () => {
+        setIsPopupOpen(false);
+        setNewCourse({ course_code: '', course_name: '' });
+        setErrorMessage('');
+    };
+
+
+    //---------------------EDIT funcitons---------------------
+    // Close edit popup - reset everything
+    const closeEditPopupAndReset = () => {
+        setIsEditPopupOpen(false);
+        setEditingCourse(null);
+        setErrorMessage('');
+    };
+    // 
+    const handleEditCourse = (course) => {
+        setEditingCourse(course);
+        setIsEditPopupOpen(true);
+        setErrorMessage('');
+    };
+
+    const handleUpdateCourse = async () => {
+        // Extracting course_code and course_name from editingCourse
+        const { course_code, course_name } = editingCourse;
+
+        // VALIDATION- Check if either field is empty and set an error message if so
+        if (!course_code.trim() || !course_name.trim()) {
+            setErrorMessage('Both course code and course name are required.');
+            return;
+        }
+
         try {
-            const response = await fetch('/api/courses', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newCourse)
+            // get the id of the course to be updated
+            let { id } = editingCourse;
+            const response = await fetch(`/api/courses/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ course_code, course_name }),
             });
 
             if (response.ok) {
-                // If the course was successfully added, fetch the updated list of courses
-                await fetchCourses();
+                // If the course was successfully updated, reset the form and fetch the updated list of courses
+                setIsEditPopupOpen(false);
+                setErrorMessage('');
+                fetchCourses();
+                setEditingCourse(null);
             } else {
-                console.error('Failed to add course');
+                const data = await response.json();
+                setErrorMessage(data.message || 'Failed to update course.');
             }
         } catch (error) {
-            console.error('Error adding course:', error);
+            console.error('Error updating course:', error);
+            setErrorMessage('An error occurred while updating the course.');
         }
+    };
 
-        // Reset input fields and close the popup
-        setNewCourse({
-            courseName: '',
-            courseCode: ''
-        });
-        setIsPopupOpen(false);
+    // Update the state when the user types in the input fields
+    let handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditingCourse(prevState => ({
+            ...prevState,
+            // Convert the input name to the format expected by the state
+            [name === 'course_code' ? 'course_code' : name === 'course_name' ? 'course_name' : name]: value,
+        }));
     };
 
     return (
@@ -106,7 +207,7 @@ export default function Courses() {
                             </div>
                             {/* Edit and Archive icons */}
                             <div className="flex items-center">
-                                <div className="flex-grow" title='Edit Course'>
+                                <div className="flex-grow" title='Edit Course' onClick={() => handleEditCourse(course)}>
                                     <Icon icon="ci:edit-pencil-line-01" width="24" height="24" className=" cursor-pointer" />
                                 </div>
                                 <div className="w-px h-6 bg-gray-400 mx-2"></div>
@@ -123,17 +224,38 @@ export default function Courses() {
                     <div className="bg-gray-300 p-20 rounded-lg">
                         <h2 className="text-xl font-bold mb-4">Add New Course</h2>
                         <div className="mb-6">
-                            <label htmlFor="courseCode" className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
-                            <input type="text" id="courseCode" name="courseCode" value={newCourse.courseCode} onChange={handleInputChange} placeholder="Enter course code" className="border-gray-300 border rounded-md p-2 block w-full" maxLength={50} />
+                            <label htmlFor="course_code" className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
+                            <input type="text" id="course_code" name="course_code" value={newCourse.course_code} onChange={handleInputChange} placeholder="Enter course code" className="border-gray-300 border rounded-md p-2 block w-full" maxLength={200} />
                         </div>
                         <div className="mb-6">
-                            <label htmlFor="courseName" className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
-                            <input type="text" id="courseName" name="courseName" value={newCourse.courseName} onChange={handleInputChange} placeholder="Enter course name" className="border-gray-300 border rounded-md p-2 block w-full" maxLength={50} />
+                            <label htmlFor="course_name" className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                            <input type="text" id="course_name" name="course_name" value={newCourse.course_name} onChange={handleInputChange} placeholder="Enter course name" className="border-gray-300 border rounded-md p-2 block w-full" maxLength={200} />
                         </div>
                         <div className="flex justify-between">
                             <button onClick={handleAddNewCourse} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Add Course</button>
-                            <button onClick={() => setIsPopupOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                            <button onClick={closePopupAndResetForm} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
                         </div>
+                        {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
+                    </div>
+                </div>
+            )}
+            {isEditPopupOpen && editingCourse && (
+                <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-gray-300 p-20 rounded-lg">
+                        <h2 className="text-xl font-bold mb-4">Edit Course</h2>
+                        <div className="mb-6">
+                            <label htmlFor="editcourse_code" className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
+                            <input type="text" id="editcourse_code" name="course_code" value={editingCourse.course_code || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-full" maxLength={200} />
+                        </div>
+                        <div className="mb-6">
+                            <label htmlFor="editcourse_name" className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                            <input type="text" id="editcourse_name" name="course_name" value={editingCourse.course_name || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-full" maxLength={200} />
+                        </div>
+                        <div className="flex justify-between">
+                            <button onClick={() => handleUpdateCourse(editingCourse.id)} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Update Course</button>
+                            <button onClick={closeEditPopupAndReset} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                        </div>
+                        {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
                     </div>
                 </div>
             )}
