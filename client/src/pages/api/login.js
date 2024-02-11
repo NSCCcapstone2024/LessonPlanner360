@@ -42,7 +42,7 @@ export default async function handler(request, response) {
 
                 // Compare the hashed password with the stored password
                 if (hash == storedPassword) {
-                    response.status(200).json({ message: 'Login successful' });
+                    response.status(200).json({ message: 'Login successful', username: username });
                 } else {
                     response.status(401).json({ message: 'Invalid credentials' });
                 }

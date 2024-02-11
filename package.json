@@ -9,6 +9,8 @@
   "author": "Sean Morrow",
   "license": "ISC",
   "dependencies": {
-    "mysql2": "^3.7.1"
+    "@nextui-org/react": "^2.2.9",
+    "mysql2": "^3.7.1",
+    "react-tooltip": "^5.26.0"
   }
 }
