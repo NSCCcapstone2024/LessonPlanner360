@@ -1,20 +1,27 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Icon } from '@iconify-icon/react';
+import { useSession, signOut } from 'next-auth/react';
+
 
 export default function Courses() {
+
+    const { data: session, status } = useSession();
+    const username = session?.user?.name
     const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
     const [courseCode, setCourseCode] = useState('');
     const [isUnique, setIsUnique] = useState(true);
     const [courses, setCourses] = useState([]);
-    const [username, setUsername] = useState('');
+    // const [username, setUsername] = useState('');
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [newCourse, setNewCourse] = useState({
         course_name: '',
         course_code: ''
     });
+
+
 
     const router = useRouter();
 
@@ -35,14 +42,11 @@ export default function Courses() {
     };
 
     useEffect(() => {
-        // Get the username to display in welcome message
-        let storedUsername = localStorage.getItem('username');
-        if (storedUsername) {
-            setUsername(storedUsername);
+        // Ensure we only fetch courses if the user is authenticated
+        if (session) {
+            fetchCourses();
         }
-        fetchCourses();
-    }, []);
-
+    }, [session]);
     // check if the course code is unique
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -56,11 +60,23 @@ export default function Courses() {
         return () => clearTimeout(timer);
     }, [courseCode]);
 
+    // ---------------------AUTHENTICATION---------------------
+    // make sure that if the user is not autheticated, they cannot access any of the inner pages of the app.
+    useEffect(() => {
+        if (status !== "loading" && !session) {
+            router.push('/login');
+        }
+    }, [session, status, router]);
+
+
+    if (status === "loading") {
+        return <div>Loading...</div>;
+    }
+
     // logout function
     const handleLogout = () => {
-        router.push('/login');
+        signOut({ callbackUrl: '/login' });
     };
-
     //---------------------ADD funcitons---------------------
 
     const handleAddCourse = () => {
@@ -262,3 +278,4 @@ export default function Courses() {
         </div>
     );
 }
+
