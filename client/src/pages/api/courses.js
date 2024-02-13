@@ -34,6 +34,12 @@ export default async function handler(request, response) {
             // Insert the new course into the database
             await connection.execute('INSERT INTO tblCourses (course_code, course_name) VALUES (?, ?)', [course_code, course_name]);
             return response.status(201).json({ message: 'Course added successfully' });
+        } else if (request.method === 'PUT') {
+            const courseId = request.query.id;
+
+            // Archive the course
+            await connection.execute('UPDATE tblCourses SET isArchived = true WHERE id = ?', [courseId]);
+            return response.status(200).json({ message: 'Course archived successfully.' });
         } else {
             response.setHeader('Allow', ['GET', 'POST']);
             return response.status(405).end(`Method ${request.method} Not Allowed`);

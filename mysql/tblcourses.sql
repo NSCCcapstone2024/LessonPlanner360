@@ -10,7 +10,6 @@
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -26,6 +25,7 @@ CREATE TABLE `tblCourses` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `course_code` varchar(200) NOT NULL,
   `course_name` varchar(200) NOT NULL,
+  `isArchived` BOOLEAN NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -38,9 +38,11 @@ INSERT INTO `tblCourses` (`id`, `course_code`, `course_name`) VALUES
 ('2', 'WEBD3000', 'Web Application Programming II'),
 ('3', 'INFT3000', 'Capstone'),
 ('4', 'INET2005', 'Web Application Programming I'),
-('5', 'INFT2100','Project Management');
+('5', 'INFT2100', 'Project Management');
 
-
+-- Update statement to mark a course as archived
+UPDATE `tblCourses`
+SET `isArchived` = 1
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
