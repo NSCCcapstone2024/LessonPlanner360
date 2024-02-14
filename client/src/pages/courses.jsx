@@ -200,57 +200,6 @@ export default function Courses() {
         }));
     };
 
-    // Function to archive a course
-    const archiveCourse = async (courseId) => {
-        try {
-            const response = await fetch(`/api/course/${courseId}`, {
-                method: 'PUT',
-            });
-
-            if (response.ok) {
-                fetchCourses();
-            } else {
-                console.error('Failed to archive course');
-            }
-        } catch (error) {
-            console.error('Error archiving course:', error);
-        }
-    };
-
-    // Function to delete a course
-    const deleteCourse = async (courseId) => {
-        try {
-            const response = await fetch(`/api/course/${courseId}`, {
-                method: 'DELETE',
-            });
-
-            if (response.ok) {
-                fetchCourses();
-            } else {
-                console.error('Failed to delete course');
-            }
-        } catch (error) {
-            console.error('Error deleting course:', error);
-        }
-    };
-
-    // Function to retrieve an archived course
-    const retrieveCourse = async (courseId) => {
-        try {
-            const response = await fetch(`/api/course/${courseId}`, {
-                method: 'PUT',
-            });
-
-            if (response.ok) {
-                fetchCourses();
-            } else {
-                console.error('Failed to retrieve course');
-            }
-        } catch (error) {
-            console.error('Error retrieving course:', error);
-        }
-    };
-
     return (
         <div className="container mx-auto px-4 pt-8">
             <div className="flex items-center justify-between mb-4">
@@ -329,4 +278,3 @@ export default function Courses() {
         </div>
     );
 }
-
