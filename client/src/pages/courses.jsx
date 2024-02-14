@@ -155,6 +155,20 @@ export default function Courses() {
         setErrorMessage('');
     };
 
+    const handleArchiveNavigation = (course) => {
+        // Navigate to the archive page and pass the course details as query parameters
+        router.push({
+            pathname: '/archive',
+            query: {
+                id: course.id,
+                course_code: course.course_code,
+                course_name: course.course_name
+            }
+        });
+    };
+
+
+
     const handleUpdateCourse = async () => {
         // Extracting course_code and course_name from editingCourse
         const { course_code, course_name } = editingCourse;
@@ -227,9 +241,10 @@ export default function Courses() {
                                     <Icon icon="ci:edit-pencil-line-01" width="24" height="24" className=" cursor-pointer" />
                                 </div>
                                 <div className="w-px h-6 bg-gray-400 mx-2"></div>
-                                <div className="flex-grow" title='Archive course'>
+                                <div className="flex-grow" title='Archive Page' onClick={() => handleArchiveNavigation(course)}>
                                     <Icon icon="fluent:archive-arrow-back-16-regular" width="24" height="24" className="text-red-500 cursor-pointer" />
                                 </div>
+
                             </div>
                         </div>
                     </div>
