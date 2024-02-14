@@ -219,14 +219,15 @@ export default function Courses() {
             <div className="flex items-center justify-between mb-4">
                 <p className="text-2xl font-bold">Welcome {username} ! </p>
                 <div className="flex items-center">
-                    <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded-md ml-2">Logout</button>
-                    <div title="Add a new course">
-                        <svg onClick={handleAddCourse} xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500 cursor-pointer ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" title="Add a new course">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
+                    <div title="Add a new course" className="ml-4">
+                        <Icon icon="bx:bxs-plus-circle" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" onClick={handleAddCourse} />
+                    </div>
+                    <div title="Logout" className="ml-4" onClick={handleLogout}>
+                        <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" />
                     </div>
                 </div>
             </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {courses.map((course, index) => (
                     <div key={index} className="relative bg-gray-100 p-4 rounded-lg">
