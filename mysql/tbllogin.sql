@@ -23,6 +23,7 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `tblLogin` (
+  `email` VARCHAR(100) NOT NULL,
   `username` VARCHAR(45) NOT NULL,
   `password` VARCHAR(200) NOT NULL,
   `salt` VARCHAR(200) NOT NULL,
@@ -32,11 +33,13 @@ CREATE TABLE `tblLogin` (
 -- Dumping data for table `tblLogin`
 --
 -- password = ryan: secret, victoria: hello
-INSERT INTO `tblLogin` (`username`, `password`, `salt`) VALUES
-('ryan', '472fa2f9532d1d3f3ec1e48faf90cdc12b5892f17ec92d006cc9ea6e258af600', 'KUgMBBIZbPDsMiGUOc1UvQ=='),
-('victoria', '999c0fada31e9b908b37eaa366e182cb1d9783d9d80824cdc1005a5e838ef5ee','5oyQOm8lAsCo4iqjtyYZcQ==');
+INSERT INTO `tblLogin` (`email`,`username`, `password`, `salt`) VALUES
+('ryanmclaren@example.com','ryan', '472fa2f9532d1d3f3ec1e48faf90cdc12b5892f17ec92d006cc9ea6e258af600', 'KUgMBBIZbPDsMiGUOc1UvQ=='),
+('vsdatadevelopment@gmail.com','victoria', '999c0fada31e9b908b37eaa366e182cb1d9783d9d80824cdc1005a5e838ef5ee','5oyQOm8lAsCo4iqjtyYZcQ==');
 
-
+ALTER TABLE tblLogin
+ADD COLUMN resetToken VARCHAR(255),
+ADD COLUMN resetTokenExpiration DATETIME;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

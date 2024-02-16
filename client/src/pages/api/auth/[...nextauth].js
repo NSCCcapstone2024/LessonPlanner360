@@ -9,6 +9,7 @@ export default NextAuth({
         CredentialsProvider({
             name: "Credentials",
             credentials: {
+                email: { label: "Email", type: "email" },
                 username: { label: "Username", type: "text" },
                 password: { label: "Password", type: "password" }
             },
@@ -21,8 +22,8 @@ export default NextAuth({
                 });
 
                 // find the username in the database
-                const query = 'SELECT password, salt FROM tblLogin WHERE username = ?';
-                const [rows] = await connection.execute(query, [credentials.username]);
+                const query = 'SELECT * FROM tblLogin WHERE username = ? AND email = ?';
+                const [rows] = await connection.execute(query, [credentials.username, credentials.email]);
 
                 // if username does not exist, return null
                 if (rows.length == 0) {
