@@ -191,6 +191,45 @@ export default function Courses() {
         setIsArchivePopupOpen(false);
     };
 
+    const handleDeleteArchivedCourse = async (courseId) => {
+        try {
+            const response = await fetch(`/api/delete/${courseId}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                // If deletion is successful, remove the course from the archived list
+                const updatedArchivedCourses = archivedCourses.filter(course => course.id !== courseId);
+                setArchivedCourses(updatedArchivedCourses);
+            } else {
+                console.error('Failed to delete archived course');
+            }
+        } catch (error) {
+            console.error('Error deleting archived course:', error);
+        }
+    };
+
+    const handleRetrieveCourse = async (course) => {
+        try {
+            const response = await fetch(`/api/retrieve-course/${course.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(course),
+            });
+            if (response.ok) {
+                // If retrieval is successful, remove the course from the archived list
+                const updatedArchivedCourses = archivedCourses.filter(c => c.id !== course.id);
+                setArchivedCourses(updatedArchivedCourses);
+
+                // Add the retrieved course back to the main course list
+                setCourses(prevCourses => [...prevCourses, course]);
+            } else {
+                console.error('Failed to retrieve course');
+            }
+        } catch (error) {
+            console.error('Error retrieving course:', error);
+        }
+    };
+
 
 
     const handleUpdateCourse = async () => {
@@ -337,6 +376,20 @@ export default function Courses() {
                             <div>
                                 <p className="text-lg font-semibold">{course.course_code}</p>
                                 <p className="text-gray-800">{course.course_name}</p>
+                            </div>
+                            <div className="mt-2 flex justify-end">
+                                <button
+                                    onClick={() => handleDeleteArchivedCourse(course.id)}
+                                    className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
+                                >
+                                    Delete
+                                </button>
+                                <button
+                                    onClick={() => handleRetrieveCourse(course)}
+                                    className="bg-green-500 text-white px-4 py-2 rounded-md"
+                                >
+                                    Retrieve
+                                </button>
                             </div>
                         </div>
                     ))}
