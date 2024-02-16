@@ -26,6 +26,7 @@ CREATE TABLE `tblCourses` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `course_code` varchar(200) NOT NULL,
   `course_name` varchar(200) NOT NULL,
+  `archived` TINYINT(1) DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -39,7 +40,6 @@ INSERT INTO `tblCourses` (`id`, `course_code`, `course_name`) VALUES
 ('3', 'INFT3000', 'Capstone'),
 ('4', 'INET2005', 'Web Application Programming I'),
 ('5', 'INFT2100','Project Management');
-
 
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

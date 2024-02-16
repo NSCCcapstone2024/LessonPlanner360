@@ -164,22 +164,25 @@ export default function Courses() {
         setIsArchivePopupOpen(true);
     };
 
-    // Function to handle confirming the archive action
+    // Update handleConfirmArchive function
     const handleConfirmArchive = async () => {
         try {
-            // Perform archive action (e.g., send a request to the server)
-            // After archiving, you can update the UI as necessary
-            // For demonstration purposes, let's just log the archived course
-            console.log('Archiving course:', archivingCourse);
-            // Close the confirmation popup after archiving
-            setIsArchivePopupOpen(false);
+            const response = await fetch(`/api/archive/${archivingCourse.id}`, {
+                method: 'PUT',
+            });
+            if (response.ok) {
+                // If archiving is successful, update UI
+                setIsArchivePopupOpen(false);
 
-            // Remove the archived course from the main list
-            const updatedCourses = courses.filter(course => course.id !== archivingCourse.id);
-            setCourses(updatedCourses);
+                // Remove the archived course from the main list
+                const updatedCourses = courses.filter(course => course.id !== archivingCourse.id);
+                setCourses(updatedCourses);
 
-            // Add the archived course to the archived courses list
-            setArchivedCourses(prevArchivedCourses => [...prevArchivedCourses, archivingCourse]);
+                // Add the archived course to the archived courses list
+                setArchivedCourses(prevArchivedCourses => [...prevArchivedCourses, archivingCourse]);
+            } else {
+                console.error('Failed to archive course');
+            }
         } catch (error) {
             console.error('Error archiving course:', error);
         }

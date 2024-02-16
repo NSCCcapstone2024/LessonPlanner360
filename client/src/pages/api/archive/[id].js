@@ -1,3 +1,4 @@
+// api/archive/[id].js
 import mysql from 'mysql2/promise';
 
 export default async function handler(request, response) {
@@ -18,13 +19,18 @@ export default async function handler(request, response) {
         });
 
         if (method === 'PUT') {
-            // Perform the archive operation
+            // Update the course status to 'archived' in the database
             const [result] = await connection.execute('UPDATE tblCourses SET archived = ? WHERE id = ?', [1, id]);
             if (result.affectedRows === 0) {
                 return response.status(404).json({ message: 'Course not found' });
             }
-            return response.status(200).json({ message: 'Course archived successfully' });
-        } else {
+
+            // Fetch the archived course data from the database
+            const [archivedCourse] = await connection.execute('SELECT * FROM tblCourses WHERE id = ?', [id]);
+
+            return response.status(200).json({ message: 'Course archived successfully', archivedCourse });
+        }
+        else {
             response.setHeader('Allow', ['PUT']);
             return response.status(405).end(`Method ${method} Not Allowed`);
         }
