@@ -29,13 +29,17 @@ services:
       - linkednetwork
 
   client:
+    env_file:
+      - ./.env.local
     environment:
       DB_HOST: db
       DB_USER: root
       DB_PASSWORD: secret
       DB_NAME: capstone
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_bWFpbi1saW9uZXNzLTI4LmNsZXJrLmFjY291bnRzLmRldiQ
-      CLERK_SECRET_KEY: sk_test_QgCg0luX1db1rUyOYH4YwA1a9Sj6thlwLLpxyFpd7g
+      SENDGRID_API_KEY: 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
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      EMAIL_USERNAME: vsdatadevelopment@gmail.com
+      EMAIL_PASSWORD: rdqyagyctsgsiwwn
     build:
       context: ./client
       dockerfile: Dockerfile
