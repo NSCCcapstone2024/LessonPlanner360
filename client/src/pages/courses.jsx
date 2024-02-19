@@ -20,6 +20,9 @@ export default function Courses() {
         course_name: '',
         course_code: ''
     });
+    const [isArchivePopupOpen, setIsArchivePopupOpen] = useState(false);
+    const [archivingCourse, setArchivingCourse] = useState(null);
+    const [archivedCourses, setArchivedCourses] = useState([]);
 
 
 
@@ -155,16 +158,76 @@ export default function Courses() {
         setErrorMessage('');
     };
 
-    const handleArchiveNavigation = (course) => {
-        // Navigate to the archive page and pass the course details as query parameters
-        router.push({
-            pathname: '/archive',
-            query: {
-                id: course.id,
-                course_code: course.course_code,
-                course_name: course.course_name
+    // Function to handle opening the archive confirmation popup
+    const handleArchiveConfirmation = (course) => {
+        setArchivingCourse(course);
+        setIsArchivePopupOpen(true);
+    };
+
+    // Function to handle confirming the archive action
+    const handleConfirmArchive = async () => {
+        try {
+            // Perform archive action (e.g., send a request to the server)
+            // After archiving, you can update the UI as necessary
+            // For demonstration purposes, let's just log the archived course
+            console.log('Archiving course:', archivingCourse);
+            // Close the confirmation popup after archiving
+            setIsArchivePopupOpen(false);
+
+            // Remove the archived course from the main list
+            const updatedCourses = courses.filter(course => course.id !== archivingCourse.id);
+            setCourses(updatedCourses);
+
+            // Add the archived course to the archived courses list
+            setArchivedCourses(prevArchivedCourses => [...prevArchivedCourses, archivingCourse]);
+        } catch (error) {
+            console.error('Error archiving course:', error);
+        }
+    };
+
+    // Function to handle cancelling the archive action
+    const handleCancelArchive = () => {
+        // Close the confirmation popup without archiving
+        setIsArchivePopupOpen(false);
+    };
+
+    const handleDeleteArchivedCourse = async (courseId) => {
+        try {
+            const response = await fetch(`/api/delete/${courseId}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                // If deletion is successful, remove the course from the archived list
+                const updatedArchivedCourses = archivedCourses.filter(course => course.id !== courseId);
+                setArchivedCourses(updatedArchivedCourses);
+            } else {
+                console.error('Failed to delete archived course');
             }
-        });
+        } catch (error) {
+            console.error('Error deleting archived course:', error);
+        }
+    };
+
+    const handleRetrieveCourse = async (course) => {
+        try {
+            const response = await fetch(`/api/retrieve-course/${course.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(course),
+            });
+            if (response.ok) {
+                // If retrieval is successful, remove the course from the archived list
+                const updatedArchivedCourses = archivedCourses.filter(c => c.id !== course.id);
+                setArchivedCourses(updatedArchivedCourses);
+
+                // Add the retrieved course back to the main course list
+                setCourses(prevCourses => [...prevCourses, course]);
+            } else {
+                console.error('Failed to retrieve course');
+            }
+        } catch (error) {
+            console.error('Error retrieving course:', error);
+        }
     };
 
 
@@ -242,7 +305,7 @@ export default function Courses() {
                                     <Icon icon="ci:edit-pencil-line-01" width="24" height="24" className=" cursor-pointer" />
                                 </div>
                                 <div className="w-px h-6 bg-gray-400 mx-2"></div>
-                                <div className="flex-grow" title='Archive Page' onClick={() => handleArchiveNavigation(course)}>
+                                <div className="flex-grow" title='Archive Page' onClick={() => handleArchiveConfirmation(course)}>
                                     <Icon icon="fluent:archive-arrow-back-16-regular" width="24" height="24" className="text-red-500 cursor-pointer" />
                                 </div>
 
@@ -289,6 +352,47 @@ export default function Courses() {
                         </div>
                         {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
                     </div>
+                </div>
+            )}
+            {isArchivePopupOpen && archivingCourse && (
+                <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-gray-300 p-20 rounded-lg">
+                        <h2 className="text-xl font-bold mb-4">Archive Course</h2>
+                        <p>Are you sure you want to archive the course {archivingCourse.course_name} ({archivingCourse.course_code})?</p>
+                        <div className="flex justify-between mt-4">
+                            <button onClick={handleConfirmArchive} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Archive</button>
+                            <button onClick={handleCancelArchive} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Display archived courses */}
+            {archivedCourses.length > 0 && (
+                <div className="mt-8">
+                    <h2 className="text-xl font-bold mb-4">Archived Courses</h2>
+                    {archivedCourses.map((course, index) => (
+                        <div key={index} className="bg-gray-100 p-4 rounded-lg">
+                            <div>
+                                <p className="text-lg font-semibold">{course.course_code}</p>
+                                <p className="text-gray-800">{course.course_name}</p>
+                            </div>
+                            <div className="mt-2 flex justify-end">
+                                <button
+                                    onClick={() => handleDeleteArchivedCourse(course.id)}
+                                    className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
+                                >
+                                    Delete
+                                </button>
+                                <button
+                                    onClick={() => handleRetrieveCourse(course)}
+                                    className="bg-green-500 text-white px-4 py-2 rounded-md"
+                                >
+                                    Retrieve
+                                </button>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>
