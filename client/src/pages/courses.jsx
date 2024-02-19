@@ -50,7 +50,6 @@ export default function Courses() {
             fetchCourses();
         }
     }, [session]);
-
     // check if the course code is unique
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -71,14 +70,6 @@ export default function Courses() {
             router.push('/login');
         }
     }, [session, status, router]);
-
-    // Function to fetch archived courses from localStorage on component mount
-    useEffect(() => {
-        const archivedCoursesFromStorage = localStorage.getItem('archivedCourses');
-        if (archivedCoursesFromStorage) {
-            setArchivedCourses(JSON.parse(archivedCoursesFromStorage));
-        }
-    }, []);
 
 
     if (status === "loading") {
@@ -167,41 +158,32 @@ export default function Courses() {
         setErrorMessage('');
     };
 
-    // Function to update archived courses in state and localStorage
-    const updateArchivedCourses = (updatedArchivedCourses) => {
-        setArchivedCourses(updatedArchivedCourses);
-        localStorage.setItem('archivedCourses', JSON.stringify(updatedArchivedCourses));
-    };
-
     // Function to handle opening the archive confirmation popup
     const handleArchiveConfirmation = (course) => {
         setArchivingCourse(course);
         setIsArchivePopupOpen(true);
     };
 
+    // Function to handle confirming the archive action
     const handleConfirmArchive = async () => {
         try {
-            const response = await fetch(`/api/archive/${archivingCourse.id}`, {
-                method: 'PUT',
-            });
-            if (response.ok) {
-                // If archiving is successful, update UI
-                setIsArchivePopupOpen(false);
+            // Perform archive action (e.g., send a request to the server)
+            // After archiving, you can update the UI as necessary
+            // For demonstration purposes, let's just log the archived course
+            console.log('Archiving course:', archivingCourse);
+            // Close the confirmation popup after archiving
+            setIsArchivePopupOpen(false);
 
-                // Remove the archived course from the main list
-                const updatedCourses = courses.filter(course => course.id !== archivingCourse.id);
-                setCourses(updatedCourses);
+            // Remove the archived course from the main list
+            const updatedCourses = courses.filter(course => course.id !== archivingCourse.id);
+            setCourses(updatedCourses);
 
-                // Add the archived course to the archived courses list
-                updateArchivedCourses([...archivedCourses, archivingCourse]);
-            } else {
-                console.error('Failed to archive course');
-            }
+            // Add the archived course to the archived courses list
+            setArchivedCourses(prevArchivedCourses => [...prevArchivedCourses, archivingCourse]);
         } catch (error) {
             console.error('Error archiving course:', error);
         }
     };
-
 
     // Function to handle cancelling the archive action
     const handleCancelArchive = () => {
@@ -396,7 +378,6 @@ export default function Courses() {
                                 <p className="text-gray-800">{course.course_name}</p>
                             </div>
                             <div className="mt-2 flex justify-end">
-                                {/* Add buttons to delete and retrieve archived courses */}
                                 <button
                                     onClick={() => handleDeleteArchivedCourse(course.id)}
                                     className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
