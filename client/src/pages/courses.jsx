@@ -50,6 +50,7 @@ export default function Courses() {
             fetchCourses();
         }
     }, [session]);
+
     // check if the course code is unique
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -70,6 +71,14 @@ export default function Courses() {
             router.push('/login');
         }
     }, [session, status, router]);
+
+    // Function to fetch archived courses from localStorage on component mount
+    useEffect(() => {
+        const archivedCoursesFromStorage = localStorage.getItem('archivedCourses');
+        if (archivedCoursesFromStorage) {
+            setArchivedCourses(JSON.parse(archivedCoursesFromStorage));
+        }
+    }, []);
 
 
     if (status === "loading") {
@@ -158,13 +167,18 @@ export default function Courses() {
         setErrorMessage('');
     };
 
+    // Function to update archived courses in state and localStorage
+    const updateArchivedCourses = (updatedArchivedCourses) => {
+        setArchivedCourses(updatedArchivedCourses);
+        localStorage.setItem('archivedCourses', JSON.stringify(updatedArchivedCourses));
+    };
+
     // Function to handle opening the archive confirmation popup
     const handleArchiveConfirmation = (course) => {
         setArchivingCourse(course);
         setIsArchivePopupOpen(true);
     };
 
-    // Update handleConfirmArchive function
     const handleConfirmArchive = async () => {
         try {
             const response = await fetch(`/api/archive/${archivingCourse.id}`, {
@@ -179,7 +193,7 @@ export default function Courses() {
                 setCourses(updatedCourses);
 
                 // Add the archived course to the archived courses list
-                setArchivedCourses(prevArchivedCourses => [...prevArchivedCourses, archivingCourse]);
+                updateArchivedCourses([...archivedCourses, archivingCourse]);
             } else {
                 console.error('Failed to archive course');
             }
@@ -187,6 +201,7 @@ export default function Courses() {
             console.error('Error archiving course:', error);
         }
     };
+
 
     // Function to handle cancelling the archive action
     const handleCancelArchive = () => {
@@ -381,6 +396,7 @@ export default function Courses() {
                                 <p className="text-gray-800">{course.course_name}</p>
                             </div>
                             <div className="mt-2 flex justify-end">
+                                {/* Add buttons to delete and retrieve archived courses */}
                                 <button
                                     onClick={() => handleDeleteArchivedCourse(course.id)}
                                     className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
