@@ -20,10 +20,10 @@ export default async function handler(request, response) {
             }
 
             // Otherwise, fetch all courses
-            const [rows] = await connection.execute('SELECT id, course_code, course_name FROM tblCourses');
+            const [rows] = await connection.execute('SELECT id, course_code, course_name, year FROM tblCourses');
             return response.status(200).json(rows);
         } else if (request.method === 'POST') {
-            const { course_code, course_name } = request.body;
+            const { course_code, course_name, year } = request.body;
 
             // Ensure course_code is unique before adding a new course
             const [existingCourses] = await connection.execute('SELECT id FROM tblCourses WHERE course_code = ?', [course_code]);
@@ -32,7 +32,7 @@ export default async function handler(request, response) {
             }
 
             // Insert the new course into the database
-            await connection.execute('INSERT INTO tblCourses (course_code, course_name) VALUES (?, ?)', [course_code, course_name]);
+            await connection.execute('INSERT INTO tblCourses (course_code, course_name, year) VALUES (?, ?, ?)', [course_code, course_name, year]);
             return response.status(201).json({ message: 'Course added successfully' });
         } else {
             response.setHeader('Allow', ['GET', 'POST']);

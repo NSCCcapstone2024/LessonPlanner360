@@ -16,6 +16,7 @@ export default function Courses() {
     const [courses, setCourses] = useState([]);
     // const [username, setUsername] = useState('');
     const [isPopupOpen, setIsPopupOpen] = useState(false);
+
     const [newCourse, setNewCourse] = useState({
         course_name: '',
         course_code: ''
@@ -23,6 +24,7 @@ export default function Courses() {
     const [isArchivePopupOpen, setIsArchivePopupOpen] = useState(false);
     const [archivingCourse, setArchivingCourse] = useState(null);
     const [archivedCourses, setArchivedCourses] = useState([]);
+
 
 
 
@@ -90,8 +92,8 @@ export default function Courses() {
     // event handler for adding a new course
     const handleAddNewCourse = async () => {
         // VALIDATION- Check if either field is empty and set an error message if so
-        if (!newCourse.course_code.trim() || !newCourse.course_name.trim()) {
-            setErrorMessage('Both course code and course name are required.');
+        if (!newCourse.course_code.trim() || !newCourse.course_name.trim() || !newCourse.year) {
+            setErrorMessage('Course code, course name and year are required.');
             return;
         }
         try {
@@ -102,13 +104,14 @@ export default function Courses() {
                 },
                 body: JSON.stringify({
                     course_code: newCourse.course_code,
-                    course_name: newCourse.course_name
+                    course_name: newCourse.course_name,
+                    year: newCourse.year
                 }),
             });
             const data = await response.json();
             if (response.ok) {
                 // If the course was successfully added, reset the form and fetch the updated list of courses
-                setNewCourse({ course_code: '', course_name: '' }); // Reset the form fields
+                setNewCourse({ course_code: '', course_name: '', year: '' }); // Reset the form fields
                 setIsPopupOpen(false);
                 setErrorMessage('');
                 fetchCourses();
@@ -139,7 +142,7 @@ export default function Courses() {
     // Close add popup - reset everything
     const closePopupAndResetForm = () => {
         setIsPopupOpen(false);
-        setNewCourse({ course_code: '', course_name: '' });
+        setNewCourse({ course_code: '', course_name: '', year: '' });
         setErrorMessage('');
     };
 
@@ -234,11 +237,11 @@ export default function Courses() {
 
     const handleUpdateCourse = async () => {
         // Extracting course_code and course_name from editingCourse
-        const { course_code, course_name } = editingCourse;
+        const { course_code, course_name, year } = editingCourse;
 
         // VALIDATION- Check if either field is empty and set an error message if so
-        if (!course_code.trim() || !course_name.trim()) {
-            setErrorMessage('Both course code and course name are required.');
+        if (!course_code.trim() || !course_name.trim() || !year) {
+            setErrorMessage('Course code, course name and year are required.');
             return;
         }
 
@@ -248,7 +251,7 @@ export default function Courses() {
             const response = await fetch(`/api/courses/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ course_code, course_name }),
+                body: JSON.stringify({ course_code, course_name, year }),
             });
 
             if (response.ok) {
@@ -272,21 +275,22 @@ export default function Courses() {
         const { name, value } = e.target;
         setEditingCourse(prevState => ({
             ...prevState,
-            // Convert the input name to the format expected by the state
-            [name === 'course_code' ? 'course_code' : name === 'course_name' ? 'course_name' : name]: value,
+            [name]: value,
         }));
     };
 
     return (
         <div className="container mx-auto px-4 pt-8">
             <div className="flex items-center justify-between mb-4">
-                <p className="text-2xl font-bold">Welcome {username} ! </p>
+                <div title="Logout" className="ml-4" onClick={handleLogout}>
+                    <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" />
+                </div>
+                <div>
+                    <p className="text-2xl font-bold">Welcome {username} ! </p>
+                </div>
                 <div className="flex items-center">
                     <div title="Add a new course" className="ml-4">
                         <Icon icon="bx:bxs-plus-circle" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" onClick={handleAddCourse} />
-                    </div>
-                    <div title="Logout" className="ml-4" onClick={handleLogout}>
-                        <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" />
                     </div>
                 </div>
             </div>
@@ -296,105 +300,123 @@ export default function Courses() {
                     <div key={index} className="relative bg-gray-100 p-4 rounded-lg">
                         <div className="flex justify-between items-center mb-4">
                             <div>
-                                <p className="text-lg font-semibold">{course.course_code}</p>
+                                {/* Display course_code and year together */}
+                                <p className="text-lg font-semibold">
+                                    {course.course_code} - <span className="text-black">{course.year}</span>
+                                </p>
                                 <p className="text-gray-800">{course.course_name}</p>
                             </div>
                             {/* Edit and Archive icons */}
                             <div className="flex items-center">
                                 <div className="flex-grow" title='Edit Course' onClick={() => handleEditCourse(course)}>
-                                    <Icon icon="ci:edit-pencil-line-01" width="24" height="24" className=" cursor-pointer" />
+                                    <Icon icon="ci:edit-pencil-line-01" width="24" height="24" className="cursor-pointer" />
                                 </div>
                                 <div className="w-px h-6 bg-gray-400 mx-2"></div>
                                 <div className="flex-grow" title='Archive Page' onClick={() => handleArchiveConfirmation(course)}>
                                     <Icon icon="fluent:archive-arrow-back-16-regular" width="24" height="24" className="text-red-500 cursor-pointer" />
                                 </div>
-
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
-            {isPopupOpen && (
-                <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                    <div className="bg-gray-300 p-20 rounded-lg">
-                        <h2 className="text-xl font-bold mb-4">Add New Course</h2>
-                        <div className="mb-6">
-                            <label htmlFor="course_code" className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
-                            <input type="text" id="course_code" name="course_code" value={newCourse.course_code} onChange={handleInputChange} placeholder="Enter course code" className="border-gray-300 border rounded-md p-2 block w-full" maxLength={200} />
-                        </div>
-                        <div className="mb-6">
-                            <label htmlFor="course_name" className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
-                            <input type="text" id="course_name" name="course_name" value={newCourse.course_name} onChange={handleInputChange} placeholder="Enter course name" className="border-gray-300 border rounded-md p-2 block w-full" maxLength={200} />
-                        </div>
-                        <div className="flex justify-between">
-                            <button onClick={handleAddNewCourse} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Add Course</button>
-                            <button onClick={closePopupAndResetForm} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-                        </div>
-                        {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
-                    </div>
-                </div>
-            )}
-            {isEditPopupOpen && editingCourse && (
-                <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                    <div className="bg-gray-300 p-20 rounded-lg">
-                        <h2 className="text-xl font-bold mb-4">Edit Course</h2>
-                        <div className="mb-6">
-                            <label htmlFor="editcourse_code" className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
-                            <input type="text" id="editcourse_code" name="course_code" value={editingCourse.course_code || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-full" maxLength={200} />
-                        </div>
-                        <div className="mb-6">
-                            <label htmlFor="editcourse_name" className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
-                            <input type="text" id="editcourse_name" name="course_name" value={editingCourse.course_name || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-full" maxLength={200} />
-                        </div>
-                        <div className="flex justify-between">
-                            <button onClick={() => handleUpdateCourse(editingCourse.id)} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Update Course</button>
-                            <button onClick={closeEditPopupAndReset} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-                        </div>
-                        {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
-                    </div>
-                </div>
-            )}
-            {isArchivePopupOpen && archivingCourse && (
-                <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                    <div className="bg-gray-300 p-20 rounded-lg">
-                        <h2 className="text-xl font-bold mb-4">Archive Course</h2>
-                        <p>Are you sure you want to archive the course {archivingCourse.course_name} ({archivingCourse.course_code})?</p>
-                        <div className="flex justify-between mt-4">
-                            <button onClick={handleConfirmArchive} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Archive</button>
-                            <button onClick={handleCancelArchive} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+            {
+                isPopupOpen && (
+                    <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                        <div className="bg-gray-300 p-20 rounded-lg">
+                            <h2 className="text-xl font-bold mb-4">Add New Course</h2>
+                            <div className="mb-6">
+                                <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                                <input type="text" id="year" name="year" value={newCourse.year} onChange={handleInputChange} placeholder="Enter year" className="border-gray-300 border rounded-md p-2 block w-96 " maxLength={4} />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="course_code" className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
+                                <input type="text" id="course_code" name="course_code" value={newCourse.course_code} onChange={handleInputChange} placeholder="Enter course code" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="course_name" className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                                <input type="text" id="course_name" name="course_name" value={newCourse.course_name} onChange={handleInputChange} placeholder="Enter course name" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
+                            </div>
+                            <div className="flex justify-between">
+                                <button onClick={handleAddNewCourse} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Add Course</button>
+                                <button onClick={closePopupAndResetForm} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                            </div>
+                            {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
+            {
+                isEditPopupOpen && editingCourse && (
+                    <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                        <div className="bg-gray-300 p-20 rounded-lg">
+                            <h2 className="text-xl font-bold mb-4">Edit Course</h2>
+                            <div className="mb-6">
+                                <label htmlFor="editYear" className="block text-sm font-medium text-gray-700 mb-1">Year:</label>
+                                <input type="text" id="editYear" name="year" value={editingCourse.year || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="editcourse_code" className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
+                                <input type="text" id="editcourse_code" name="course_code" value={editingCourse.course_code || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="editcourse_name" className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                                <input type="text" id="editcourse_name" name="course_name" value={editingCourse.course_name || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
+                            </div>
+                            <div className="flex justify-between">
+                                <button onClick={() => handleUpdateCourse(editingCourse.id)} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Update Course</button>
+                                <button onClick={closeEditPopupAndReset} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                            </div>
+                            {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
+                        </div>
+                    </div>
+                )
+            }
+            {
+                isArchivePopupOpen && archivingCourse && (
+                    <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                        <div className="bg-gray-300 p-20 rounded-lg">
+                            <h2 className="text-xl font-bold mb-4">Archive Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
+                            <p className='text-lg'>Are you sure you want to archive the course {archivingCourse.course_name} ({archivingCourse.course_code})?</p>
+                            <div className="flex justify-between mt-4">
+                                <button onClick={handleConfirmArchive} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Archive</button>
+                                <button onClick={handleCancelArchive} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
 
             {/* Display archived courses */}
-            {archivedCourses.length > 0 && (
-                <div className="mt-8">
-                    <h2 className="text-xl font-bold mb-4">Archived Courses</h2>
-                    {archivedCourses.map((course, index) => (
-                        <div key={index} className="bg-gray-100 p-4 rounded-lg">
-                            <div>
-                                <p className="text-lg font-semibold">{course.course_code}</p>
-                                <p className="text-gray-800">{course.course_name}</p>
+            {
+                archivedCourses.length > 0 && (
+                    <div className="mt-8">
+                        <h2 className="text-xl font-bold mb-4">Archived Courses</h2>
+                        {archivedCourses.map((course, index) => (
+                            <div key={index} className="bg-gray-100 p-4 rounded-lg">
+                                <div>
+                                    <p className="text-lg font-semibold">{course.course_code}</p>
+                                    <p className="text-gray-800">{course.course_name}</p>
+                                </div>
+                                <div className="mt-2 flex justify-end">
+                                    <button
+                                        onClick={() => handleDeleteArchivedCourse(course.id)}
+                                        className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
+                                    >
+                                        Delete
+                                    </button>
+                                    <button
+                                        onClick={() => handleRetrieveCourse(course)}
+                                        className="bg-green-500 text-white px-4 py-2 rounded-md"
+                                    >
+                                        Retrieve
+                                    </button>
+                                </div>
                             </div>
-                            <div className="mt-2 flex justify-end">
-                                <button
-                                    onClick={() => handleDeleteArchivedCourse(course.id)}
-                                    className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
-                                >
-                                    Delete
-                                </button>
-                                <button
-                                    onClick={() => handleRetrieveCourse(course)}
-                                    className="bg-green-500 text-white px-4 py-2 rounded-md"
-                                >
-                                    Retrieve
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
+                        ))}
+                    </div>
+                )
+            }
+        </div >
     );
 }

@@ -26,6 +26,7 @@ CREATE TABLE `tblCourses` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `course_code` varchar(200) NOT NULL,
   `course_name` varchar(200) NOT NULL,
+  `year` year NOT NULL,
   `archived` TINYINT(1) DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -34,12 +35,12 @@ CREATE TABLE `tblCourses` (
 -- Dumping data for table `tblCourses`
 --
 -- 
-INSERT INTO `tblCourses` (`id`, `course_code`, `course_name`) VALUES
-('1', 'WEBD3027', 'Developing for CMS'),
-('2', 'WEBD3000', 'Web Application Programming II'),
-('3', 'INFT3000', 'Capstone'),
-('4', 'INET2005', 'Web Application Programming I'),
-('5', 'INFT2100','Project Management');
+INSERT INTO `tblCourses` (`id`, `course_code`, `course_name`, `year`) VALUES
+('1', 'WEBD3027', 'Developing for CMS', 2024),
+('2', 'WEBD3000', 'Web Application Programming II', 2024),
+('3', 'INFT3000', 'Capstone', 2024),
+('4', 'INET2005', 'Web Application Programming I', 2024),
+('5', 'INFT2100','Project Management', 2024);
 
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
