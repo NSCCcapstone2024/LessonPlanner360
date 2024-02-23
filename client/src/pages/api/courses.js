@@ -13,14 +13,14 @@ export default async function handler(request, response) {
         });
 
         if (request.method === 'GET') {
-            // If a course_code query parameter is provided, check for its uniqueness
+            // Check for course_code uniqueness if provided
             if (course_code) {
                 const [rows] = await connection.execute('SELECT id FROM tblCourses WHERE course_code = ?', [course_code]);
                 return response.json({ isUnique: rows.length === 0 });
             }
 
-            // Otherwise, fetch all courses
-            const [rows] = await connection.execute('SELECT id, course_code, course_name, year FROM tblCourses');
+            // fetch only non-archived courses
+            const [rows] = await connection.execute('SELECT id, course_code, course_name, year FROM tblCourses WHERE archived = 0');
             return response.status(200).json(rows);
         } else if (request.method === 'POST') {
             const { course_code, course_name, year } = request.body;

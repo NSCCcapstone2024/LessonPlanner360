@@ -14,6 +14,7 @@ export default function Courses() {
     const [courseCode, setCourseCode] = useState('');
     const [isUnique, setIsUnique] = useState(true);
     const [courses, setCourses] = useState([]);
+    const [isYearOpen, setIsYearOpen] = useState({});
     // const [username, setUsername] = useState('');
     const [isPopupOpen, setIsPopupOpen] = useState(false);
 
@@ -24,9 +25,6 @@ export default function Courses() {
     const [isArchivePopupOpen, setIsArchivePopupOpen] = useState(false);
     const [archivingCourse, setArchivingCourse] = useState(null);
     const [archivedCourses, setArchivedCourses] = useState([]);
-
-
-
 
     const router = useRouter();
 
@@ -64,6 +62,21 @@ export default function Courses() {
         }, 500);
         return () => clearTimeout(timer);
     }, [courseCode]);
+
+    useEffect(() => {
+        const fetchArchivedCourses = async () => {
+            try {
+                const res = await fetch('/api/courses/archived');
+                if (!res.ok) throw new Error('Failed to fetch archived courses');
+                const data = await res.json();
+                setArchivedCourses(data);
+            } catch (error) {
+                console.error('Error fetching archived courses:', error);
+            }
+        };
+        fetchArchivedCourses();
+    }, []);
+
 
     // ---------------------AUTHENTICATION---------------------
     // make sure that if the user is not autheticated, they cannot access any of the inner pages of the app.
@@ -160,6 +173,33 @@ export default function Courses() {
         setIsEditPopupOpen(true);
         setErrorMessage('');
     };
+    // Update the state when the user types in the input fields
+    let handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditingCourse(prevState => ({
+            ...prevState,
+            [name]: value,
+        }));
+    };
+    //---------------------ARCHIVE funcitons---------------------
+
+    const fetchArchivedCourses = async () => {
+        try {
+            const response = await fetch('/api/courses/archived'); // Adjust the URL path as needed
+            if (!response.ok) {
+                throw new Error('Failed to fetch archived courses');
+            }
+            const archivedCoursesData = await response.json();
+            setArchivedCourses(archivedCoursesData); // Update your state with the fetched data
+        } catch (error) {
+            console.error('Error fetching archived courses:', error);
+            // Handle error (e.g., update the UI to show an error message)
+        }
+    };
+
+
+
+
 
     // Function to handle opening the archive confirmation popup
     const handleArchiveConfirmation = (course) => {
@@ -170,23 +210,42 @@ export default function Courses() {
     // Function to handle confirming the archive action
     const handleConfirmArchive = async () => {
         try {
-            // Perform archive action (e.g., send a request to the server)
-            // After archiving, you can update the UI as necessary
-            // For demonstration purposes, let's just log the archived course
-            console.log('Archiving course:', archivingCourse);
-            // Close the confirmation popup after archiving
+            // Assuming `archivingCourse.id` is the ID of the course to be archived
+            const res = await fetch(`/api/archive/${archivingCourse.id}`, {
+                method: 'PUT',
+            });
+
+            if (!res.ok) {
+                // Handle error response from the server
+                const errorData = await res.json();
+                throw new Error(errorData.message || 'Failed to archive course');
+            }
+
+            // Optionally, you can use the response here if needed
+            // const data = await res.json();
+            // console.log(data.message); // Log success message or handle as needed
+
+            // Close the archive confirmation popup
             setIsArchivePopupOpen(false);
 
-            // Remove the archived course from the main list
+            // Update the local state to reflect the change immediately on the UI
+            // This removes the course from the active list without needing to refresh
             const updatedCourses = courses.filter(course => course.id !== archivingCourse.id);
             setCourses(updatedCourses);
 
-            // Add the archived course to the archived courses list
-            setArchivedCourses(prevArchivedCourses => [...prevArchivedCourses, archivingCourse]);
+            // Since the backend endpoint returns the updated course data,
+            // you might want to update your state that holds archived courses here
+            // For now, a simple way is to refetch both active and archived courses lists from the backend
+            fetchCourses();
+            // Ensure you have a function similar to fetchCourses to fetch archived courses
+            fetchArchivedCourses();
         } catch (error) {
             console.error('Error archiving course:', error);
+            // Handle UI feedback/error message here
         }
     };
+
+
 
     // Function to handle cancelling the archive action
     const handleCancelArchive = () => {
@@ -270,14 +329,7 @@ export default function Courses() {
         }
     };
 
-    // Update the state when the user types in the input fields
-    let handleEditInputChange = (e) => {
-        const { name, value } = e.target;
-        setEditingCourse(prevState => ({
-            ...prevState,
-            [name]: value,
-        }));
-    };
+
 
     return (
         <div className="container mx-auto px-4 pt-8">
@@ -388,35 +440,30 @@ export default function Courses() {
             }
 
             {/* Display archived courses */}
-            {
-                archivedCourses.length > 0 && (
-                    <div className="mt-8">
-                        <h2 className="text-xl font-bold mb-4">Archived Courses</h2>
-                        {archivedCourses.map((course, index) => (
-                            <div key={index} className="bg-gray-100 p-4 rounded-lg">
-                                <div>
-                                    <p className="text-lg font-semibold">{course.course_code}</p>
-                                    <p className="text-gray-800">{course.course_name}</p>
-                                </div>
-                                <div className="mt-2 flex justify-end">
-                                    <button
-                                        onClick={() => handleDeleteArchivedCourse(course.id)}
-                                        className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
-                                    >
-                                        Delete
-                                    </button>
-                                    <button
-                                        onClick={() => handleRetrieveCourse(course)}
-                                        className="bg-green-500 text-white px-4 py-2 rounded-md"
-                                    >
-                                        Retrieve
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+            {/* Display archived courses grouped by year */}
+            <div className="mt-8">
+                <h2 className="text-xl font-bold mb-4">Archived Courses</h2>
+                {archivedCourses.map((course, index) => (
+                    <div key={index} className="bg-gray-100 p-4 rounded-lg mb-4">
+                        <p className="text-lg font-semibold">{course.course_code} - {course.year}</p>
+                        <p>{course.course_name}</p>
+                        <div className="mt-2 flex justify-end space-x-2">
+                            <button
+                                onClick={() => handleDeleteArchivedCourse(course.id)}
+                                className="bg-red-500 text-white px-4 py-2 rounded-md"
+                            >
+                                Delete
+                            </button>
+                            <button
+                                onClick={() => handleRetrieveCourse(course)}
+                                className="bg-green-500 text-white px-4 py-2 rounded-md"
+                            >
+                                Retrieve
+                            </button>
+                        </div>
                     </div>
-                )
-            }
-        </div >
+                ))}
+            </div>
+        </div>
     );
 }
