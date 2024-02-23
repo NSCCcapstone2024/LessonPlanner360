@@ -313,29 +313,28 @@ export default function Courses() {
         }
     };
 
+    // ---------------------RETRIEVE funcitons---------------------
 
+    // fetch the restored courses
     const handleRetrieveCourse = async (course) => {
         try {
-            const response = await fetch(`/api/retrieve-course/${course.id}`, {
+            const res = await fetch(`/api/courses/restore/${course.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(course),
             });
-            if (response.ok) {
-                // If retrieval is successful, remove the course from the archived list
-                const updatedArchivedCourses = archivedCourses.filter(c => c.id !== course.id);
-                setArchivedCourses(updatedArchivedCourses);
-
-                // Add the retrieved course back to the main course list
-                setCourses(prevCourses => [...prevCourses, course]);
-            } else {
-                console.error('Failed to retrieve course');
+            if (!res.ok) {
+                throw new Error('Failed to restore course');
             }
+            // Remove the course from the archived list
+            let updatedArchivedCourses = archivedCourses.filter(c => c.id !== course.id);
+            setArchivedCourses(updatedArchivedCourses);
+            // Add the course back to the active list
+            setCourses(prevCourses => [course, ...prevCourses]);
+            // fetch the updated list of courses
+            fetchCourses();
         } catch (error) {
-            console.error('Error retrieving course:', error);
+            console.error('Error restoring course:', error);
         }
     };
-
 
 
 
@@ -472,7 +471,7 @@ export default function Courses() {
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
                         <div className="bg-white p-20 rounded-lg shadow-lg ">
                             <h2 className="text-xl font-bold mb-4">Delete Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
-                            <p className='text-lg'>Are you sure you want to delete this course: {deletingCourse?.course_name}?</p>
+                            <p className='text-lg'>Are you sure you want to delete this course and all of its contents: {deletingCourse?.course_name}?</p>
                             <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!!</p>
                             <div className="flex justify-between mt-4">
                                 <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
