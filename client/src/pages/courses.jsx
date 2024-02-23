@@ -6,27 +6,35 @@ import { useSession, signOut } from 'next-auth/react';
 
 export default function Courses() {
 
+    // ---------------------STATE---------------------
     const { data: session, status } = useSession();
     const username = session?.user?.name
+    const router = useRouter();
+
+    // POPUPS
     const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [isYearOpen, setIsYearOpen] = useState({});
+    const [isArchivePopupOpen, setIsArchivePopupOpen] = useState(false);
+    const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
+
+    //Action states
+    const [deletingCourse, setDeletingCourse] = useState(null);
     const [editingCourse, setEditingCourse] = useState(null);
+    const [archivingCourse, setArchivingCourse] = useState(null);
+    const [archivedCourses, setArchivedCourses] = useState([]);
+
+    // Error message
     const [errorMessage, setErrorMessage] = useState('');
+
+    // Other setters
     const [courseCode, setCourseCode] = useState('');
     const [isUnique, setIsUnique] = useState(true);
     const [courses, setCourses] = useState([]);
-    const [isYearOpen, setIsYearOpen] = useState({});
-    // const [username, setUsername] = useState('');
-    const [isPopupOpen, setIsPopupOpen] = useState(false);
-
     const [newCourse, setNewCourse] = useState({
         course_name: '',
         course_code: ''
     });
-    const [isArchivePopupOpen, setIsArchivePopupOpen] = useState(false);
-    const [archivingCourse, setArchivingCourse] = useState(null);
-    const [archivedCourses, setArchivedCourses] = useState([]);
-
-    const router = useRouter();
 
     //---------------------FETCH functions---------------------
     // Fetch the list of courses from the server
@@ -63,6 +71,7 @@ export default function Courses() {
         return () => clearTimeout(timer);
     }, [courseCode]);
 
+    // Fetch the list of archived courses from the server
     useEffect(() => {
         const fetchArchivedCourses = async () => {
             try {
@@ -167,7 +176,6 @@ export default function Courses() {
         setEditingCourse(null);
         setErrorMessage('');
     };
-    // 
     const handleEditCourse = (course) => {
         setEditingCourse(course);
         setIsEditPopupOpen(true);
@@ -181,118 +189,6 @@ export default function Courses() {
             [name]: value,
         }));
     };
-    //---------------------ARCHIVE funcitons---------------------
-
-    const fetchArchivedCourses = async () => {
-        try {
-            const response = await fetch('/api/courses/archived'); // Adjust the URL path as needed
-            if (!response.ok) {
-                throw new Error('Failed to fetch archived courses');
-            }
-            const archivedCoursesData = await response.json();
-            setArchivedCourses(archivedCoursesData); // Update your state with the fetched data
-        } catch (error) {
-            console.error('Error fetching archived courses:', error);
-            // Handle error (e.g., update the UI to show an error message)
-        }
-    };
-
-
-
-
-
-    // Function to handle opening the archive confirmation popup
-    const handleArchiveConfirmation = (course) => {
-        setArchivingCourse(course);
-        setIsArchivePopupOpen(true);
-    };
-
-    // Function to handle confirming the archive action
-    const handleConfirmArchive = async () => {
-        try {
-            // Assuming `archivingCourse.id` is the ID of the course to be archived
-            const res = await fetch(`/api/archive/${archivingCourse.id}`, {
-                method: 'PUT',
-            });
-
-            if (!res.ok) {
-                // Handle error response from the server
-                const errorData = await res.json();
-                throw new Error(errorData.message || 'Failed to archive course');
-            }
-
-            // Optionally, you can use the response here if needed
-            // const data = await res.json();
-            // console.log(data.message); // Log success message or handle as needed
-
-            // Close the archive confirmation popup
-            setIsArchivePopupOpen(false);
-
-            // Update the local state to reflect the change immediately on the UI
-            // This removes the course from the active list without needing to refresh
-            const updatedCourses = courses.filter(course => course.id !== archivingCourse.id);
-            setCourses(updatedCourses);
-
-            // Since the backend endpoint returns the updated course data,
-            // you might want to update your state that holds archived courses here
-            // For now, a simple way is to refetch both active and archived courses lists from the backend
-            fetchCourses();
-            // Ensure you have a function similar to fetchCourses to fetch archived courses
-            fetchArchivedCourses();
-        } catch (error) {
-            console.error('Error archiving course:', error);
-            // Handle UI feedback/error message here
-        }
-    };
-
-
-
-    // Function to handle cancelling the archive action
-    const handleCancelArchive = () => {
-        // Close the confirmation popup without archiving
-        setIsArchivePopupOpen(false);
-    };
-
-    const handleDeleteArchivedCourse = async (courseId) => {
-        try {
-            const response = await fetch(`/api/delete/${courseId}`, {
-                method: 'DELETE',
-            });
-            if (response.ok) {
-                // If deletion is successful, remove the course from the archived list
-                const updatedArchivedCourses = archivedCourses.filter(course => course.id !== courseId);
-                setArchivedCourses(updatedArchivedCourses);
-            } else {
-                console.error('Failed to delete archived course');
-            }
-        } catch (error) {
-            console.error('Error deleting archived course:', error);
-        }
-    };
-
-    const handleRetrieveCourse = async (course) => {
-        try {
-            const response = await fetch(`/api/retrieve-course/${course.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(course),
-            });
-            if (response.ok) {
-                // If retrieval is successful, remove the course from the archived list
-                const updatedArchivedCourses = archivedCourses.filter(c => c.id !== course.id);
-                setArchivedCourses(updatedArchivedCourses);
-
-                // Add the retrieved course back to the main course list
-                setCourses(prevCourses => [...prevCourses, course]);
-            } else {
-                console.error('Failed to retrieve course');
-            }
-        } catch (error) {
-            console.error('Error retrieving course:', error);
-        }
-    };
-
-
 
     const handleUpdateCourse = async () => {
         // Extracting course_code and course_name from editingCourse
@@ -328,6 +224,118 @@ export default function Courses() {
             setErrorMessage('An error occurred while updating the course.');
         }
     };
+
+    //---------------------ARCHIVE funcitons---------------------
+
+    // fetch ONLY the courses that have been marked as "1" or archived
+    const fetchArchivedCourses = async () => {
+        try {
+            let response = await fetch('/api/courses/archived');
+            if (!response.ok) {
+                throw new Error('Failed to fetch archived courses');
+            }
+            let archivedCoursesData = await response.json();
+            setArchivedCourses(archivedCoursesData);
+        } catch (error) {
+            console.error('Error fetching archived courses:', error);
+        }
+    };
+
+
+    // Function to handle opening the archive confirmation popup
+    let handleArchiveConfirmation = (course) => {
+        setArchivingCourse(course);
+        setIsArchivePopupOpen(true);
+    };
+
+    // Confirm the archive action
+    const handleConfirmArchive = async () => {
+        try {
+            const res = await fetch(`/api/archive/${archivingCourse.id}`, {
+                method: 'PUT',
+            });
+
+            if (!res.ok) {
+                // Handle error response from the server
+                const errorData = await res.json();
+                throw new Error(errorData.message || 'Failed to archive course');
+            }
+            // Close popup
+            setIsArchivePopupOpen(false);
+            // remove course from the active list without needing to refresh
+            const updatedCourses = courses.filter(course => course.id !== archivingCourse.id);
+            setCourses(updatedCourses);
+            // fetch the updated list of courses
+            fetchCourses();
+            // fetch only the archived courses
+            fetchArchivedCourses();
+        } catch (error) {
+            console.error('Error archiving course:', error);
+        }
+    };
+
+    // Function to handle cancelling the archive action
+    const handleCancelArchive = () => {
+        // Close the confirmation popup without archiving
+        setIsArchivePopupOpen(false);
+    };
+
+    //---------------------DELETE funcitons---------------------
+    // Delete popup
+    const handleDeleteConfirmation = (course) => {
+        setDeletingCourse(course);
+        setIsDeletePopupOpen(true);
+    };
+
+    //Close delete popup and reset everything
+    const closeDeletePopup = () => {
+        setIsDeletePopupOpen(false);
+        setDeletingCourse(null);
+    };
+
+
+    // handle the deletion of the archived courses
+    const handleConfirmDelete = async () => {
+        try {
+            const response = await fetch(`/api/delete/${deletingCourse.id}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                // Update your course list here, either by filtering out the deleted course or refetching the courses
+                setCourses(courses.filter(course => course.id !== deletingCourse.id));
+                setArchivedCourses(archivedCourses.filter(course => course.id !== deletingCourse.id));
+                closeDeletePopup();
+            } else {
+                console.error('Failed to delete course');
+            }
+        } catch (error) {
+            console.error('Error deleting course:', error);
+        }
+    };
+
+
+    const handleRetrieveCourse = async (course) => {
+        try {
+            const response = await fetch(`/api/retrieve-course/${course.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(course),
+            });
+            if (response.ok) {
+                // If retrieval is successful, remove the course from the archived list
+                const updatedArchivedCourses = archivedCourses.filter(c => c.id !== course.id);
+                setArchivedCourses(updatedArchivedCourses);
+
+                // Add the retrieved course back to the main course list
+                setCourses(prevCourses => [...prevCourses, course]);
+            } else {
+                console.error('Failed to retrieve course');
+            }
+        } catch (error) {
+            console.error('Error retrieving course:', error);
+        }
+    };
+
 
 
 
@@ -429,7 +437,7 @@ export default function Courses() {
                     <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
                         <div className="bg-gray-300 p-20 rounded-lg">
                             <h2 className="text-xl font-bold mb-4">Archive Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
-                            <p className='text-lg'>Are you sure you want to archive the course {archivingCourse.course_name} ({archivingCourse.course_code})?</p>
+                            <p className='text-lg mb-8'>Are you sure you want to archive the course {archivingCourse.course_name} ({archivingCourse.course_code})?</p>
                             <div className="flex justify-between mt-4">
                                 <button onClick={handleConfirmArchive} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Archive</button>
                                 <button onClick={handleCancelArchive} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
@@ -438,9 +446,6 @@ export default function Courses() {
                     </div>
                 )
             }
-
-            {/* Display archived courses */}
-            {/* Display archived courses grouped by year */}
             <div className="mt-8">
                 <h2 className="text-xl font-bold mb-4">Archived Courses</h2>
                 {archivedCourses.map((course, index) => (
@@ -449,7 +454,7 @@ export default function Courses() {
                         <p>{course.course_name}</p>
                         <div className="mt-2 flex justify-end space-x-2">
                             <button
-                                onClick={() => handleDeleteArchivedCourse(course.id)}
+                                onClick={() => handleDeleteConfirmation(course)}
                                 className="bg-red-500 text-white px-4 py-2 rounded-md"
                             >
                                 Delete
@@ -463,6 +468,19 @@ export default function Courses() {
                         </div>
                     </div>
                 ))}
+                {isDeletePopupOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                        <div className="bg-white p-20 rounded-lg shadow-lg ">
+                            <h2 className="text-xl font-bold mb-4">Delete Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
+                            <p className='text-lg'>Are you sure you want to delete this course: {deletingCourse?.course_name}?</p>
+                            <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!!</p>
+                            <div className="flex justify-between mt-4">
+                                <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
+                                <button onClick={closeDeletePopup} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
