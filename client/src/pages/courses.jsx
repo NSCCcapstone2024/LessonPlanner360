@@ -256,23 +256,32 @@ export default function Courses() {
             });
 
             if (!res.ok) {
-                // Handle error response from the server
                 const errorData = await res.json();
                 throw new Error(errorData.message || 'Failed to archive course');
             }
+
+            // Update the archived and archived_year fields
+            const updatedArchivingCourse = { ...archivingCourse, archived: 1, archived_year: new Date().getFullYear() };
+
             // Close popup
             setIsArchivePopupOpen(false);
-            // remove course from the active list without needing to refresh
-            const updatedCourses = courses.filter(course => course.id !== archivingCourse.id);
+
+            // Update the course in the frontend without needing to refresh
+            const updatedCourses = courses.map(course =>
+                course.id === archivingCourse.id ? updatedArchivingCourse : course
+            );
             setCourses(updatedCourses);
-            // fetch the updated list of courses
+
+            // Fetch the updated list of courses
             fetchCourses();
-            // fetch only the archived courses
+
+            // Fetch only the archived courses
             fetchArchivedCourses();
         } catch (error) {
             console.error('Error archiving course:', error);
         }
     };
+
 
     // Function to handle cancelling the archive action
     const handleCancelArchive = () => {
@@ -335,8 +344,6 @@ export default function Courses() {
             console.error('Error restoring course:', error);
         }
     };
-
-
 
     return (
         <div className="container mx-auto px-4 pt-8">
@@ -449,8 +456,12 @@ export default function Courses() {
                 <h2 className="text-xl font-bold mb-4">Archived Courses</h2>
                 {archivedCourses.map((course, index) => (
                     <div key={index} className="bg-gray-100 p-4 rounded-lg mb-4">
-                        <p className="text-lg font-semibold">{course.course_code} - {course.year}</p>
+                        {/* Display archived course code, archived year, and course name */}
+                        <p className="text-lg font-semibold">
+                            {course.course_code} - <span className="text-black">{course.archived_year}</span>
+                        </p>
                         <p>{course.course_name}</p>
+
                         <div className="mt-2 flex justify-end space-x-2">
                             <button
                                 onClick={() => handleDeleteConfirmation(course)}
@@ -467,6 +478,7 @@ export default function Courses() {
                         </div>
                     </div>
                 ))}
+
                 {isDeletePopupOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
                         <div className="bg-white p-20 rounded-lg shadow-lg ">

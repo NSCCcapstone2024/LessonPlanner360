@@ -17,8 +17,8 @@ export default async function handler(req, res) {
             database: process.env.DB_NAME,
         });
 
-        // Fetch all archived courses
-        const [archivedCourses] = await connection.execute('SELECT * FROM tblCourses WHERE archived = 1 ORDER BY year DESC');
+        // Fetch all archived courses including archived_year
+        const [archivedCourses] = await connection.execute('SELECT *, YEAR(archived_year) AS archived_year FROM tblCourses WHERE archived = 1 ORDER BY year DESC');
 
         // Send the archived courses as response
         return res.status(200).json(archivedCourses);

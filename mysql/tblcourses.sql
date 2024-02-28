@@ -42,6 +42,7 @@ INSERT INTO `tblCourses` (`id`, `course_code`, `course_name`, `year`) VALUES
 ('4', 'INET2005', 'Web Application Programming I', 2024),
 ('5', 'INFT2100','Project Management', 2024);
 
+ALTER TABLE `tblCourses` ADD COLUMN `archived_year` YEAR;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
