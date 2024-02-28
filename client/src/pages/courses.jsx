@@ -230,17 +230,15 @@ export default function Courses() {
     // fetch ONLY the courses that have been marked as "1" or archived
     const fetchArchivedCourses = async () => {
         try {
-            let response = await fetch('/api/courses/archived');
-            if (!response.ok) {
-                throw new Error('Failed to fetch archived courses');
-            }
-            let archivedCoursesData = await response.json();
-            setArchivedCourses(archivedCoursesData);
+            const res = await fetch('/api/courses/archived');
+            if (!res.ok) throw new Error('Failed to fetch archived courses');
+            const data = await res.json();
+            // Set archived courses with the current year
+            setArchivedCourses(data.map(course => ({ ...course, archived_year: course.archived_year ? new Date(course.archived_year).getFullYear() : null })));
         } catch (error) {
             console.error('Error fetching archived courses:', error);
         }
     };
-
 
     // Function to handle opening the archive confirmation popup
     let handleArchiveConfirmation = (course) => {
@@ -261,7 +259,8 @@ export default function Courses() {
             }
 
             // Update the archived and archived_year fields
-            const updatedArchivingCourse = { ...archivingCourse, archived: 1, archived_year: new Date().getFullYear() };
+            const currentYear = new Date().getFullYear();
+            const updatedArchivingCourse = `UPDATE tblCourses SET archived = 1, archived_year = ${currentYear} WHERE id = ${archivingCourse.id}`;
 
             // Close popup
             setIsArchivePopupOpen(false);
@@ -281,6 +280,7 @@ export default function Courses() {
             console.error('Error archiving course:', error);
         }
     };
+
 
 
     // Function to handle cancelling the archive action
@@ -456,9 +456,9 @@ export default function Courses() {
                 <h2 className="text-xl font-bold mb-4">Archived Courses</h2>
                 {archivedCourses.map((course, index) => (
                     <div key={index} className="bg-gray-100 p-4 rounded-lg mb-4">
-                        {/* Display archived course code, archived year, and course name */}
+                        {/* Display archived course code, archived year (if available), and course name */}
                         <p className="text-lg font-semibold">
-                            {course.course_code} - <span className="text-black">{course.archived_year}</span>
+                            {course.course_code} - {course.archived_year ? <span className="text-black">{course.archived_year}</span> : new Date().getFullYear()}
                         </p>
                         <p>{course.course_name}</p>
 
