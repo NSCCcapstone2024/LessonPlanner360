@@ -10,8 +10,12 @@
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
-
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `tblcourses`
@@ -37,4 +41,15 @@ INSERT INTO `tblCourses` (`id`, `course_code`, `course_name`, `year`) VALUES
 ('4', 'INET2005', 'Web Application Programming I', 2024),
 ('5', 'INFT2100','Project Management', 2024);
 
+-- Add a new column for archived_year
+ALTER TABLE `tblCourses` ADD COLUMN `archived_year` YEAR;
 
+-- Update the archived_year column based on the year column for archived courses
+UPDATE `tblCourses`
+SET `archived_year` = YEAR(CURRENT_DATE()) 
+WHERE `archived` = 1;
+
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
