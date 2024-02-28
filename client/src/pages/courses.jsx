@@ -86,6 +86,10 @@ export default function Courses() {
         fetchArchivedCourses();
     }, []);
 
+    // redirect to the corresponding lessons page
+    const getLessons = (courseId, courseName) => {
+        router.push(`/lessons/${courseId}?courseName=${encodeURIComponent(courseName)}`);
+    };
 
     // ---------------------AUTHENTICATION---------------------
     // make sure that if the user is not autheticated, they cannot access any of the inner pages of the app.
@@ -368,7 +372,13 @@ export default function Courses() {
                             <div>
                                 {/* Display course_code and year together */}
                                 <p className="text-lg font-semibold">
-                                    {course.course_code} - <span className="text-black">{course.year}</span>
+                                    <button
+                                        onClick={() => getLessons(course.id, course.course_name)}
+                                        className="text-lg font-semibold hover:underline focus:outline-none"
+                                        style={{ all: 'unset', cursor: 'pointer' }}
+                                    >
+                                        {course.course_code} - <span className="text-black">{course.year}</span>
+                                    </button>
                                 </p>
                                 <p className="text-gray-800">{course.course_name}</p>
                             </div>
