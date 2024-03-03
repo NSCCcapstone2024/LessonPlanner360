@@ -1,12 +1,15 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import AccordionItem from '../../components/accordionItem';
+import AccordionItem from '../components/accordionItem';
+import { useSession, signOut } from 'next-auth/react';
+import { Icon } from '@iconify-icon/react';
 
 export default function Lessons() {
     const router = useRouter();
     const { courseId, courseName } = router.query;
     const [lessons, setLessons] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { data: session } = useSession();
 
     useEffect(() => {
         if (!courseId) return;
@@ -35,9 +38,33 @@ export default function Lessons() {
         setLessons(updatedLessons);
     };
 
+    useEffect(() => {
+        // Ensure we only fetch data if the user is authenticated
+        if (!session) {
+            router.push('/login'); // Redirect to login page if not authenticated
+        }
+    }, [session, router]);
+
+    // Handle logout
+    const handleSignOut = () => {
+        signOut({ callbackUrl: '/login' }); // Sign out and redirect to login page
+    };
+
+    const handleAddLesson = () => {
+        // Add navigation logic to the add lesson page
+    };
+
     return (
         <div className="container mx-auto px-4 pt-8">
-            <h1 className="text-3xl font-bold mb-6">Lessons for Course {decodeURIComponent(courseName || '')}</h1>
+            <div className="flex justify-between items-center mb-6">
+                <div title="Logout" className="ml-4" onClick={handleSignOut}>
+                    <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" />
+                </div>
+                <h1 className="text-3xl font-bold">Lessons for Course {decodeURIComponent(courseName || '')}</h1>
+                <div>
+                    <Icon icon="bx:bxs-plus-circle" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" onClick={handleAddLesson} />
+                </div>
+            </div>
             {loading ? (
                 <p className="text-gray-600">Loading lessons...</p>
             ) : (
