@@ -88,7 +88,7 @@ export default function Courses() {
 
     // redirect to the corresponding lessons page
     const getLessons = (courseId, courseName) => {
-        router.push(`/lessons/${courseId}?courseName=${encodeURIComponent(courseName)}`);
+        router.push(`${courseId}?courseName=${encodeURIComponent(courseName)}`);
     };
 
     // ---------------------AUTHENTICATION---------------------
