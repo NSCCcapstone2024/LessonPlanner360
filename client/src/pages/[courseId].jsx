@@ -13,6 +13,7 @@ export default function Lessons() {
 
     // POPUPS
     const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [isUnitOpen, setIsUnitOpen] = useState({});
 
     // Error message
     const [errorMessage, setErrorMessage] = useState('');
@@ -32,12 +33,13 @@ export default function Lessons() {
     // ------------------ ADDING LESSONS--------------------
 
 
+    // open the popup when the add lesson icon is clicked
     const handleAddLesson = () => {
         setIsPopupOpen(true);
         setErrorMessage('');
     };
 
-
+    // handle input changes for the new lesson form
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewLesson((prevState) => ({
@@ -59,6 +61,8 @@ export default function Lessons() {
     };
 
     //  ----------------------- FETCHING FUNCTIONS ------------------
+
+    // fetch lessons for the course
     useEffect(() => {
         if (!courseId) return;
         const fetchLessons = async () => {
@@ -66,7 +70,17 @@ export default function Lessons() {
                 const response = await fetch(`/api/lessons/${courseId}`);
                 if (response.ok) {
                     const data = await response.json();
-                    setLessons(data);
+                    // group lessons by unit number for a nicer UI
+                    const lessonsByUnit = data.reduce((acc, lesson) => {
+                        (acc[lesson.unit_number] = acc[lesson.unit_number] || []).push(lesson);
+                        return acc;
+                    }, {});
+                    setLessons(lessonsByUnit);
+                    // initialize all units as closed
+                    setIsUnitOpen(Object.keys(lessonsByUnit).reduce((acc, unit) => {
+                        acc[unit] = false;
+                        return acc;
+                    }, {}));
                 } else {
                     console.error('Failed to fetch lessons');
                 }
@@ -79,13 +93,21 @@ export default function Lessons() {
         fetchLessons();
     }, [courseId]);
 
-    // toggle the accordion
-    const toggleLessonOpen = (lessonId) => {
-        const updatedLessons = lessons.map((lesson) =>
-            lesson.id === lessonId ? { ...lesson, isOpen: !lesson.isOpen } : lesson
-        );
-        setLessons(updatedLessons);
+    // toggle the visibility of each unit
+    const toggleUnitVisibility = (unit) => {
+        setIsUnitOpen(prevState => ({
+            ...prevState,
+            [unit]: !prevState[unit],
+        }));
     };
+
+    // dynamically change background colour of each unit
+    const getBackgroundColor = (unitNumber) => {
+        const colors = ["bg-slate-300", "bg-red-300", "bg-blue-300", "bg-blue-400"];
+        return colors[unitNumber % colors.length];
+    };
+
+    // --------------------- AUTHENTICATION --------------------
 
     useEffect(() => {
         // Ensure we only fetch data if the user is authenticated
@@ -96,7 +118,7 @@ export default function Lessons() {
 
 
     // ------------------ LOGOUT --------------------
-    const handleSignOut = () => {
+    const handleLogout = () => {
         signOut({ callbackUrl: '/login' });
     };
 
@@ -110,7 +132,7 @@ export default function Lessons() {
     return (
         <div className="container mx-auto px-4 pt-8">
             <div className="flex justify-between items-center mb-6">
-                <div title="Logout" className="ml-4" onClick={handleSignOut}>
+                <div title="Logout" className="ml-4" onClick={handleLogout}>
                     <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" />
                 </div>
                 <h1 className="text-3xl font-bold">Lessons for Course {decodeURIComponent(courseName || '')}</h1>
@@ -118,24 +140,26 @@ export default function Lessons() {
                     <Icon icon="bx:bxs-plus-circle" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" onClick={handleAddLesson} />
                 </div>
             </div>
-            {loading ? (
-                <p className="text-gray-600">Loading lessons...</p>
-            ) : (
-                <div>
-                    {lessons.length === 0 ? (
-                        <p className="text-gray-600">No lessons found for this course.</p>
-                    ) : (
-                        <div className="space-y-4">
-                            {lessons.map((lesson) => (
-                                <div key={lesson.id} className="bg-gray-100 shadow-md rounded-md p-4 transition duration-300 ease-in-out transform hover:scale-105">
-                                    <AccordionItem lesson={lesson} onToggle={toggleLessonOpen} />
+            {Object.keys(lessons).map((unit, index) => (
+                <div key={unit} className="mb-4">
+                    <button onClick={() => toggleUnitVisibility(unit)} className="text-lg font-bold">
+                        Unit {unit}
+                    </button>
+                    {isUnitOpen[unit] && (
+                        <div className="mt-2">
+                            {lessons[unit].map((lesson) => (
+                                <div key={lesson.id} className={`${getBackgroundColor(index)} p-2 rounded-lg mb-2 text-black`}>
+                                    <p><strong>Class ID:</strong> {lesson.class_ID}</p>
+                                    <p><strong>Learning Outcomes:</strong> {lesson.learning_outcomes}</p>
+                                    <p><strong>Enabling Outcomes:</strong> {lesson.enabling_outcomes}</p>
+
                                 </div>
                             ))}
                         </div>
                     )}
-
                 </div>
-            )}
+            ))}
+
             {isPopupOpen && (
                 <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
                     <div className="bg-gray-300 p-20 rounded-lg overflow-y-auto max-h-[90vh]">
