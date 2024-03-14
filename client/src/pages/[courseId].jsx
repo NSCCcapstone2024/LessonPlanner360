@@ -10,6 +10,7 @@ export default function Lessons() {
     const [lessons, setLessons] = useState([]);
     const [loading, setLoading] = useState(true);
     const { data: session } = useSession();
+    const [uploadedFilePath, setUploadedFilePath] = useState('');
 
     // POPUPS
     const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -30,23 +31,6 @@ export default function Lessons() {
         notes: '',
     });
 
-    // ------------------ ADDING LESSONS--------------------
-
-
-    // open the popup when the add lesson icon is clicked
-    const handleAddLesson = () => {
-        setIsPopupOpen(true);
-        setErrorMessage('');
-    };
-
-    // handle input changes for the new lesson form
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setNewLesson((prevState) => ({
-            ...prevState,
-            [name]: value,
-        }));
-    };
 
 
     // ----------------FILE UPLOADS-------------------
@@ -129,6 +113,70 @@ export default function Lessons() {
         setErrorMessage('');
     };
 
+    // ------------------ ADDING LESSONS --------------------
+
+    // open the popup when the add lesson icon is clicked
+    const handleAddLesson = () => {
+        setIsPopupOpen(true);
+        setErrorMessage('');
+    };
+
+    // handle input changes for the new lesson form
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setNewLesson((prevState) => ({
+            ...prevState,
+            [name]: value,
+        }));
+    };
+
+
+    const handleAddNewLesson = async () => {
+        // VALIDATION - Ensure required fields are not empty
+        if (!newLesson.unit_number.trim() || !newLesson.week.trim() || !newLesson.class_ID.trim()) {
+            setErrorMessage('Unit number, week, and class ID are required.');
+            return;
+        }
+
+        try {
+            const lessonData = {
+                ...newLesson,
+                materialPath: uploadedFilePath,
+            };
+
+            const response = await fetch(`/api/lessons/add/${courseId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(lessonData),
+            });
+
+            if (!response.ok) throw new Error('Failed to add lesson');
+            const data = await response.json();
+
+            // Reset the form and states
+            setNewLesson({
+                unit_number: '',
+                week: '',
+                class_ID: '',
+                learning_outcomes: '',
+                enabling_outcomes: '',
+                material: '',
+                assessment: '',
+                notes: '',
+            });
+            setIsPopupOpen(false);
+            setErrorMessage('');
+            setUploadedFilePath('');
+            fetchLessons();
+        } catch (error) {
+            console.error('Error adding lesson:', error);
+            setErrorMessage(error.message || 'An error occurred while adding the lesson.');
+        }
+    };
+
+
     return (
         <div className="container mx-auto px-4 pt-8">
             <div className="flex justify-between items-center mb-6">
@@ -152,7 +200,9 @@ export default function Lessons() {
                                     <p><strong>Class ID:</strong> {lesson.class_ID}</p>
                                     <p><strong>Learning Outcomes:</strong> {lesson.learning_outcomes}</p>
                                     <p><strong>Enabling Outcomes:</strong> {lesson.enabling_outcomes}</p>
-
+                                    <p><strong>Material:</strong> <a href={lesson.material} target="_blank" rel="noreferrer">Download</a></p>
+                                    <p><strong>Assessment:</strong> {lesson.assessment}</p>
+                                    <p><strong>Notes:</strong> {lesson.notes}</p>
                                 </div>
                             ))}
                         </div>
@@ -182,15 +232,15 @@ export default function Lessons() {
                         </div>
                         <div className="mb-6">
                             <label htmlFor="class_ID" className="block text-sm font-medium text-gray-700 mb-1">class ID</label>
-                            <input type="text" id="class_ID" name="class_ID" value={newLesson.class_ID} onChange={handleInputChange} placeholder="Enter class ID" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
+                            <input type="text" id="class_ID" name="class_ID" value={newLesson.class_ID} onChange={handleInputChange} placeholder="Enter class ID" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={5} />
                         </div>
                         <div className="mb-6">
                             <label htmlFor="learning_outcomes" className="block text-sm font-medium text-gray-700 mb-1">Learning Outcomes</label>
-                            <input type="text" id="learning_outcomes" name="learning_outcomes" value={newLesson.learning_outcomes} onChange={handleInputChange} placeholder="Enter Learning Outcomes" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
+                            <input type="text" id="learning_outcomes" name="learning_outcomes" value={newLesson.learning_outcomes} onChange={handleInputChange} placeholder="Enter Learning Outcomes" className="border-gray-300 border rounded-md p-2 block w-96" />
                         </div>
                         <div className="mb-6">
                             <label htmlFor="enabling_outcomes" className="block text-sm font-medium text-gray-700 mb-1">Enabling Outcomes</label>
-                            <input type="text" id="enabling_outcomes" name="enabling_outcomes" value={newLesson.enabling_outcomes} onChange={handleInputChange} placeholder="Enter Enabling Outcomes" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
+                            <input type="text" id="enabling_outcomes" name="enabling_outcomes" value={newLesson.enabling_outcomes} onChange={handleInputChange} placeholder="Enter Enabling Outcomes" className="border-gray-300 border rounded-md p-2 block w-96" />
                         </div>
                         <div className="mb-6">
                             <label htmlFor="material" className="block text-sm font-medium text-gray-700 mb-1">Material</label>
@@ -198,14 +248,14 @@ export default function Lessons() {
                         </div>
                         <div className="mb-6">
                             <label htmlFor="assessment" className="block text-sm font-medium text-gray-700 mb-1">Assessment</label>
-                            <input type="text" id="assessment" name="assessment" value={newLesson.assessment} onChange={handleInputChange} placeholder="Enter Assessment" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
+                            <input type="text" id="assessment" name="assessment" value={newLesson.assessment} onChange={handleInputChange} placeholder="Enter Assessment" className="border-gray-300 border rounded-md p-2 block w-96" />
                         </div>
                         <div className="mb-6">
                             <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                            <input type="text" id="notes" name="notes" value={newLesson.notes} onChange={handleInputChange} placeholder="Enter Notes" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
+                            <textarea id="notes" name="notes" value={newLesson.notes} onChange={handleInputChange} placeholder="Enter Notes" className="border-gray-300 border rounded-md p-2 block w-96 h-32 resize-vertical" />
                         </div>
                         <div className="flex justify-between">
-                            <button onClick={handleAddLesson} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Add Lesson</button>
+                            <button onClick={handleAddNewLesson} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Add Lesson</button>
                             <button onClick={closePopupAndResetForm} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
                         </div>
                         {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}

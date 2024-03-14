@@ -110,6 +110,7 @@ export default function Courses() {
     };
     //---------------------ADD funcitons---------------------
 
+
     const handleAddCourse = () => {
         setIsPopupOpen(true);
         setErrorMessage('');
