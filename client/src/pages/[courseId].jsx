@@ -11,13 +11,18 @@ export default function Lessons() {
     const [loading, setLoading] = useState(true);
     const { data: session } = useSession();
     const [uploadedFilePath, setUploadedFilePath] = useState('');
+    const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
+    const [deletingLesson, setDeletingLesson] = useState(null);
+
 
     // POPUPS
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [isUnitOpen, setIsUnitOpen] = useState({});
 
-    // Error message
+    // User message
+    const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+
 
     // New lesson states
     const [newLesson, setNewLesson] = useState({
@@ -137,6 +142,48 @@ export default function Lessons() {
         setErrorMessage('');
     };
 
+    // ------------------ DELETING LESSONS --------------------
+
+    // open the popup when the delete icon is clicked
+    const handleDeleteConfirmation = (lesson) => {
+        setDeletingLesson(lesson);
+        setIsDeletePopupOpen(true);
+    };
+
+    // handle the delete lesson function
+    const handleConfirmDelete = async () => {
+        if (!deletingLesson) return;
+
+        try {
+            const response = await fetch(`/api/lessons/delete/${deletingLesson.id}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                setLessons(prevLessons => {
+                    const updatedLessons = { ...prevLessons };
+                    updatedLessons[deletingLesson.unit_number] = updatedLessons[deletingLesson.unit_number].filter(lesson => lesson.id !== deletingLesson.id);
+                    return updatedLessons;
+                });
+                setIsDeletePopupOpen(false);
+                // show a success message to the user
+                setSuccessMessage('Lesson deleted successfully');
+                setTimeout(() => {
+
+                    setSuccessMessage('');
+                }, 3000);
+            } else {
+                const data = await response.json();
+                setErrorMessage(data.message || 'Failed to delete lesson');
+            }
+        } catch (error) {
+            setErrorMessage('Error deleting lesson');
+        }
+    };
+
+
+
+
+
     // ------------------ ADDING LESSONS --------------------
 
     // open the popup when the add lesson icon is clicked
@@ -163,7 +210,7 @@ export default function Lessons() {
         // Constructing the lessonData with the uploaded file path
         const lessonData = {
             ...newLesson,
-            material: uploadedFilePath, // Make sure this matches the expected field in your API
+            material: uploadedFilePath,
         };
 
         try {
@@ -189,7 +236,7 @@ export default function Lessons() {
             });
             setIsPopupOpen(false);
             setErrorMessage('');
-            fetchLessons(); // Assuming fetchLessons is accessible or refactored to be so
+            fetchLessons();
         } catch (error) {
             console.error('Error adding lesson:', error);
             setErrorMessage(error.message || 'An error occurred while adding the lesson.');
@@ -202,6 +249,7 @@ export default function Lessons() {
 
     return (
         <div className="container mx-auto px-4 pt-8">
+            {successMessage && <div className="text-center text-green-500 mb-4">{successMessage}</div>}
             <div className="flex justify-between items-center mb-6">
                 <div title="Logout" className="ml-4" onClick={handleLogout}>
                     <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" />
@@ -221,10 +269,10 @@ export default function Lessons() {
                             {lessons[unit].map((lesson) => (
                                 <div key={lesson.id} className={`${getBackgroundColor(index)} p-2 rounded-lg mb-2 text-black relative`}>
                                     <div className="flex justify-end space-x-2 absolute top-0 right-0 p-2">
-                                        <div title='Edit Course' onClick={() => handleEditCourse(lesson)} className="cursor-pointer">
+                                        <div title='Edit Lesson' onClick={() => handleEditLesson(lesson)} className="cursor-pointer">
                                             <Icon icon="ci:edit-pencil-line-01" width="24" height="24" />
                                         </div>
-                                        <div title='Archive Page' onClick={() => handleArchiveConfirmation(lesson)} className="cursor-pointer">
+                                        <div title='Delete Lesson' onClick={() => handleDeleteConfirmation(lesson)} className="cursor-pointer">
                                             <Icon icon="solar:trash-bin-trash-linear" width="24" height="24" className="text-red-500" />
                                         </div>
                                     </div>
@@ -295,7 +343,24 @@ export default function Lessons() {
                     </div>
                 </div>
             )
+
             }
+            {isDeletePopupOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white p-20 rounded-lg shadow-lg">
+                        <h2 className="text-xl font-bold mb-4">Delete Lesson</h2>
+                        <p className='text-lg'>Are you sure you want to delete this lesson: {deletingLesson?.class_ID}?</p>
+                        <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!</p>
+                        {errorMessage && <div className="text-center text-md text-red-500 mb-4">{errorMessage}</div>}
+                        <div className="flex justify-between">
+                            <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
+                            <button onClick={() => setIsDeletePopupOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
+
     );
 }
