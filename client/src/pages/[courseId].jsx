@@ -251,14 +251,20 @@ export default function Lessons() {
         <div className="container mx-auto px-4 pt-8">
             {successMessage && <div className="text-center text-green-500 mb-4">{successMessage}</div>}
             <div className="flex justify-between items-center mb-6">
-                <div title="Logout" className="ml-4" onClick={handleLogout}>
-                    <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" />
+                <div className="flex items-center">
+                    <div title="Logout" className="ml-4 mr-2" onClick={handleLogout}>
+                        <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" />
+                    </div>
+                    <a href="/courses" title="Back to courses" className="mr-4 pb-2">
+                        <Icon icon="typcn:arrow-back" className="h-8 w-8 text-gray-500 cursor-pointer" width="32" height="32" />
+                    </a>
                 </div>
                 <h1 className="text-3xl font-bold">Lessons for Course {decodeURIComponent(courseName || '')}</h1>
-                <div>
+                <div title="Add lesson">
                     <Icon icon="bx:bxs-plus-circle" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" onClick={handleAddLesson} />
                 </div>
             </div>
+
             {Object.keys(lessons).map((unit, index) => (
                 <div key={unit} className="mb-4">
                     <button onClick={() => toggleUnitVisibility(unit)} className="text-lg font-bold">
