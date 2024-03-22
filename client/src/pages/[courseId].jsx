@@ -7,7 +7,7 @@ import { Icon } from '@iconify-icon/react';
 export default function Lessons() {
     const router = useRouter();
     const { courseId, courseName } = router.query;
-    const [lessons, setLessons] = useState([]);
+    const [lessons, setLessons] = useState({});
     const [loading, setLoading] = useState(true);
     const { data: session } = useSession();
     const [uploadedFilePath, setUploadedFilePath] = useState('');
@@ -34,48 +34,70 @@ export default function Lessons() {
 
 
     // ----------------FILE UPLOADS-------------------
-    const handleFileChange = (e) => {
+
+    const handleFileChange = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            setNewLesson((prevState) => ({
-                ...prevState,
-                material: file,
-            }));
+        if (!file) {
+            console.error('No file selected');
+            return;
         }
+
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64String = reader.result
+                .replace('data:', '')
+                .replace(/^.+,/, '');
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ file: base64String, filename: file.name }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to upload file');
+                }
+
+                // Process success response
+                console.log('File uploaded successfully');
+            } catch (error) {
+                console.error('Error uploading file:', error);
+            }
+        };
+        reader.readAsDataURL(file);
     };
+
+
 
     //  ----------------------- FETCHING FUNCTIONS ------------------
 
-    // fetch lessons for the course
     useEffect(() => {
-        if (!courseId) return;
         const fetchLessons = async () => {
+            if (!session || !courseId) return;
             try {
                 const response = await fetch(`/api/lessons/${courseId}`);
                 if (response.ok) {
                     const data = await response.json();
-                    // group lessons by unit number for a nicer UI
+                    // Assuming data is an array and converting it to the expected structure
                     const lessonsByUnit = data.reduce((acc, lesson) => {
                         (acc[lesson.unit_number] = acc[lesson.unit_number] || []).push(lesson);
                         return acc;
                     }, {});
                     setLessons(lessonsByUnit);
-                    // initialize all units as closed
-                    setIsUnitOpen(Object.keys(lessonsByUnit).reduce((acc, unit) => {
-                        acc[unit] = false;
-                        return acc;
-                    }, {}));
                 } else {
                     console.error('Failed to fetch lessons');
                 }
             } catch (error) {
                 console.error('Error fetching lessons:', error);
-            } finally {
-                setLoading(false);
             }
         };
+
         fetchLessons();
-    }, [courseId]);
+    }, [session, courseId]);
+
 
     // toggle the visibility of each unit
     const toggleUnitVisibility = (unit) => {
@@ -91,17 +113,19 @@ export default function Lessons() {
         return colors[unitNumber % colors.length];
     };
 
-    // --------------------- AUTHENTICATION --------------------
-
-    useEffect(() => {
-        // Ensure we only fetch data if the user is authenticated
-        if (!session) {
-            router.push('/login');
-        }
-    }, [session, router]);
-
 
     // ------------------ LOGOUT --------------------
+    useEffect(() => {
+        if (status !== "loading" && !session) {
+            router.push('/login');
+        }
+    }, [session, status, router]);
+
+    if (status === "loading") {
+        return <div>Loading...</div>;
+    }
+
+    // Logout function
     const handleLogout = () => {
         signOut({ callbackUrl: '/login' });
     };
@@ -130,20 +154,19 @@ export default function Lessons() {
         }));
     };
 
-
     const handleAddNewLesson = async () => {
-        // VALIDATION - Ensure required fields are not empty
-        if (!newLesson.unit_number.trim() || !newLesson.week.trim() || !newLesson.class_ID.trim()) {
-            setErrorMessage('Unit number, week, and class ID are required.');
+        if (!newLesson.unit_number || !newLesson.week || !newLesson.class_ID) {
+            setErrorMessage('All fields are required.');
             return;
         }
 
-        try {
-            const lessonData = {
-                ...newLesson,
-                materialPath: uploadedFilePath,
-            };
+        // Constructing the lessonData with the uploaded file path
+        const lessonData = {
+            ...newLesson,
+            material: uploadedFilePath, // Make sure this matches the expected field in your API
+        };
 
+        try {
             const response = await fetch(`/api/lessons/add/${courseId}`, {
                 method: 'POST',
                 headers: {
@@ -153,9 +176,7 @@ export default function Lessons() {
             });
 
             if (!response.ok) throw new Error('Failed to add lesson');
-            const data = await response.json();
-
-            // Reset the form and states
+            // Reset the form and refetch lessons
             setNewLesson({
                 unit_number: '',
                 week: '',
@@ -168,12 +189,14 @@ export default function Lessons() {
             });
             setIsPopupOpen(false);
             setErrorMessage('');
-            setUploadedFilePath('');
-            fetchLessons();
+            fetchLessons(); // Assuming fetchLessons is accessible or refactored to be so
         } catch (error) {
             console.error('Error adding lesson:', error);
             setErrorMessage(error.message || 'An error occurred while adding the lesson.');
         }
+
+
+
     };
 
 
@@ -196,7 +219,15 @@ export default function Lessons() {
                     {isUnitOpen[unit] && (
                         <div className="mt-2">
                             {lessons[unit].map((lesson) => (
-                                <div key={lesson.id} className={`${getBackgroundColor(index)} p-2 rounded-lg mb-2 text-black`}>
+                                <div key={lesson.id} className={`${getBackgroundColor(index)} p-2 rounded-lg mb-2 text-black relative`}>
+                                    <div className="flex justify-end space-x-2 absolute top-0 right-0 p-2">
+                                        <div title='Edit Course' onClick={() => handleEditCourse(lesson)} className="cursor-pointer">
+                                            <Icon icon="ci:edit-pencil-line-01" width="24" height="24" />
+                                        </div>
+                                        <div title='Archive Page' onClick={() => handleArchiveConfirmation(lesson)} className="cursor-pointer">
+                                            <Icon icon="solar:trash-bin-trash-linear" width="24" height="24" className="text-red-500" />
+                                        </div>
+                                    </div>
                                     <p><strong>Class ID:</strong> {lesson.class_ID}</p>
                                     <p><strong>Learning Outcomes:</strong> {lesson.learning_outcomes}</p>
                                     <p><strong>Enabling Outcomes:</strong> {lesson.enabling_outcomes}</p>
@@ -217,6 +248,7 @@ export default function Lessons() {
                         <div className="mb-6">
                             <label htmlFor="unit_number" className="block text-sm font-medium text-gray-700 mb-1">Unit Number</label>
                             <select id="unit_number" name="unit_number" value={newLesson.unit_number} onChange={handleInputChange} className="border-gray-300 border rounded-md p-2 block w-1/4">
+                                <option value="" disabled>Select</option>
                                 {[...Array(10)].map((_, i) => (
                                     <option key={i} value={i + 1}>{i + 1}</option>
                                 ))}
@@ -225,6 +257,7 @@ export default function Lessons() {
                         <div className="mb-6">
                             <label htmlFor="week" className="block text-sm font-medium text-gray-700 mb-1">Week</label>
                             <select id="week" name="week" value={newLesson.week} onChange={handleInputChange} className="border-gray-300 border rounded-md p-2 block w-1/4">
+                                <option value="" disabled>Select</option>
                                 {[...Array(52)].map((_, i) => (
                                     <option key={i} value={i + 1}>{i + 1}</option>
                                 ))}
