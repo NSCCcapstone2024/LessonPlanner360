@@ -9,15 +9,18 @@ export default function Lessons() {
     const { courseId, courseName } = router.query;
     const [lessons, setLessons] = useState({});
     const [loading, setLoading] = useState(true);
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const [uploadedFilePath, setUploadedFilePath] = useState('');
     const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
     const [deletingLesson, setDeletingLesson] = useState(null);
+    const [editingLesson, setEditingLesson] = useState(null);
+
 
 
     // POPUPS
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [isUnitOpen, setIsUnitOpen] = useState({});
+    const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
 
     // User message
     const [successMessage, setSuccessMessage] = useState('');
@@ -49,31 +52,28 @@ export default function Lessons() {
 
         const reader = new FileReader();
         reader.onloadend = async () => {
-            const base64String = reader.result
-                .replace('data:', '')
-                .replace(/^.+,/, '');
-
+            // Base64 encoding logic
+            const base64String = reader.result.replace('data:', '').replace(/^.+,/, '');
             try {
                 const response = await fetch('/api/upload', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ file: base64String, filename: file.name }),
                 });
-
-                if (!response.ok) {
+                if (response.ok) {
+                    // Handle successful upload, set file path to state
+                    const data = await response.json();
+                    setEditingLesson({ ...editingLesson, material: data.filePath });
+                } else {
                     throw new Error('Failed to upload file');
                 }
-
-                // Process success response
-                console.log('File uploaded successfully');
             } catch (error) {
                 console.error('Error uploading file:', error);
             }
         };
         reader.readAsDataURL(file);
     };
+
 
 
 
@@ -121,18 +121,18 @@ export default function Lessons() {
 
     // ------------------ LOGOUT --------------------
     useEffect(() => {
-        if (status !== "loading" && !session) {
+        if (status === 'unauthenticated') { // Use 'unauthenticated' to check if the user is not logged in
             router.push('/login');
         }
-    }, [session, status, router]);
+    }, [status, router]);
 
-    if (status === "loading") {
+    if (status === 'loading') {
         return <div>Loading...</div>;
     }
 
     // Logout function
-    const handleLogout = () => {
-        signOut({ callbackUrl: '/login' });
+    const handleLogout = async () => {
+        await signOut({ callbackUrl: '/login' });
     };
 
     // close and reset all fields when cancel is clicked
@@ -181,8 +181,32 @@ export default function Lessons() {
     };
 
 
+    // ------------------ EDITING LESSONS --------------------
+    // open the popup when the edit icon is clicked
+    const handleEditLesson = (lesson) => {
+        setEditingLesson(lesson);
+        setIsEditPopupOpen(true);
+    };
 
+    // handle input change in the form
+    const handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditingLesson((prevState) => ({
+            ...prevState,
+            [name]: value,
+        }));
+    };
 
+    const handleUpdateLesson = async () => {
+        if (!newLesson.unit_number || !newLesson.week || !newLesson.class_ID) {
+            setErrorMessage('Unit Number, Week and Class ID are required.');
+            return;
+        }
+
+        setIsEditPopupOpen(false);
+        setEditingLesson(null);
+
+    };
 
     // ------------------ ADDING LESSONS --------------------
 
@@ -203,7 +227,7 @@ export default function Lessons() {
 
     const handleAddNewLesson = async () => {
         if (!newLesson.unit_number || !newLesson.week || !newLesson.class_ID) {
-            setErrorMessage('All fields are required.');
+            setErrorMessage('Unit Number, Week and Class ID are required.');
             return;
         }
 
@@ -299,6 +323,7 @@ export default function Lessons() {
                 <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
                     <div className="bg-gray-300 p-20 rounded-lg overflow-y-auto max-h-[90vh]">
                         <h2 className="text-xl font-bold mb-4">Add New Lesson</h2>
+
                         <div className="mb-6">
                             <label htmlFor="unit_number" className="block text-sm font-medium text-gray-700 mb-1">Unit Number</label>
                             <select id="unit_number" name="unit_number" value={newLesson.unit_number} onChange={handleInputChange} className="border-gray-300 border rounded-md p-2 block w-1/4">
@@ -349,11 +374,106 @@ export default function Lessons() {
                     </div>
                 </div>
             )
-
             }
+            {isEditPopupOpen && editingLesson && (
+                <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-gray-300 p-20 rounded-lg overflow-y-auto max-h-[90vh]">
+                        <h2 className="text-xl font-bold mb-4">Edit Lesson</h2>
+                        <div className="mb-6">
+                            <label htmlFor="unit_number" className="block text-sm font-medium text-gray-700 mb-1">Unit Number</label>
+                            <select
+                                name="unit_number"
+                                value={editingLesson.unit_number}
+                                onChange={handleEditInputChange}
+                                className="border-gray-300 border rounded-md p-2 block w-1/4"
+                            >
+                                {[...Array(10)].map((_, i) => (
+                                    <option key={i} value={i + 1}>{i + 1}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="mb-6">
+                            <label htmlFor="week" className="block text-sm font-medium text-gray-700 mb-1">Week</label>
+                            <select
+                                name="week"
+                                value={editingLesson.week}
+                                onChange={handleEditInputChange}
+                                className="border-gray-300 border rounded-md p-2 block w-1/4"
+                            >
+                                {[...Array(52)].map((_, i) => (
+                                    <option key={i} value={i + 1}>{i + 1}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="mb-6">
+                            <label htmlFor="class_ID" className="block text-sm font-medium text-gray-700 mb-1">class ID</label>
+                            <input
+                                type="text"
+                                name="class_ID"
+                                value={editingLesson.class_ID}
+                                onChange={handleEditInputChange}
+                                className="border-gray-300 border rounded-md p-2 block w-full"
+                            />
+                        </div>
+                        <div className="mb-6">
+                            <label htmlFor="learning_outcomes" className="block text-sm font-medium text-gray-700 mb-1">Learning Outcomes</label>
+                            <input
+                                type="text"
+                                name="learning_outcomes"
+                                value={editingLesson.learning_outcomes}
+                                onChange={handleEditInputChange}
+                                className="border-gray-300 border rounded-md p-2 block w-96"
+                            />
+                        </div>
+                        <div className="mb-6">
+                            <label htmlFor="enabling_outcomes" className="block text-sm font-medium text-gray-700 mb-1">Enabling Outcomes</label>
+                            <input
+                                type="text"
+                                name="enabling_outcomes"
+                                value={editingLesson.enabling_outcomes}
+                                onChange={handleEditInputChange}
+                                className="border-gray-300 border rounded-md p-2 block w-96"
+                            />
+                        </div>
+                        <div className="mb-6">
+                            <label htmlFor="material" className="block text-sm font-medium text-gray-700 mb-1">Material</label>
+                            <input
+                                type="file"
+                                name="material"
+                                onChange={handleFileChange}
+                                className="border-gray-300 border rounded-md p-2 block w-full"
+                            />
+                        </div>
+                        <div className="mb-6">
+                            <label htmlFor="assessment" className="block text-sm font-medium text-gray-700 mb-1">Assessment</label>
+                            <input
+                                type="text"
+                                name="assessment"
+                                value={editingLesson.assessment}
+                                onChange={handleEditInputChange}
+                                className="border-gray-300 border rounded-md p-2 block w-96"
+                            />
+                        </div>
+                        <div className="mb-6">
+                            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                            <textarea
+                                name="notes"
+                                value={editingLesson.notes}
+                                onChange={handleEditInputChange}
+                                className="border-gray-300 border rounded-md p-2 block w-96 h-32 resize-vertical"
+                            />
+                        </div>
+                        <div className="flex justify-between mt-2">
+                            <button onClick={handleUpdateLesson} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Update Lesson</button>
+                            <button onClick={() => setIsEditPopupOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {isDeletePopupOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                    <div className="bg-white p-20 rounded-lg shadow-lg">
+                    <div className="bg-gray-300 p-20 rounded-lg shadow-lg">
                         <h2 className="text-xl font-bold mb-4">Delete Lesson</h2>
                         <p className='text-lg'>Are you sure you want to delete this lesson: {deletingLesson?.class_ID}?</p>
                         <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!</p>
