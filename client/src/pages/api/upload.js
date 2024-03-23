@@ -7,7 +7,7 @@ export default async function handler(req, res) {
         const buffer = Buffer.from(file, 'base64');
 
         // Construct the path to the target directory
-        const assetsDir = path.join(process.cwd(), 'public/assets');
+        const assetsDir = path.join('public', 'assets');
 
         // Ensure the directory exists
         if (!fs.existsSync(assetsDir)) {
@@ -20,7 +20,10 @@ export default async function handler(req, res) {
 
             // Write the file
             fs.writeFileSync(filePath, buffer);
-            res.status(200).json({ message: 'File uploaded successfully' });
+
+            // Return the relative path of the uploaded file
+            const relativePath = path.join('/assets', filename);
+            res.status(200).json({ message: 'File uploaded successfully', filePath: relativePath });
         } catch (error) {
             console.error('Error writing file:', error);
             res.status(500).json({ message: 'Failed to upload file', error: error.message });

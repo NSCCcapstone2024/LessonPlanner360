@@ -43,6 +43,38 @@ export default function Lessons() {
 
     // ----------------FILE UPLOADS-------------------
 
+    // const handleFileChange = async (e) => {
+    //     const file = e.target.files[0];
+    //     if (!file) {
+    //         console.error('No file selected');
+    //         return;
+    //     }
+
+    //     const reader = new FileReader();
+    //     reader.onloadend = async () => {
+    //         // Base64 encoding logic
+    //         const base64String = reader.result.replace('data:', '').replace(/^.+,/, '');
+    //         try {
+    //             const response = await fetch('/api/upload', {
+    //                 method: 'POST',
+    //                 headers: { 'Content-Type': 'application/json' },
+    //                 body: JSON.stringify({ file: base64String, filename: file.name }),
+    //             });
+    //             if (response.ok) {
+    //                 // Handle successful upload, set file path to state
+    //                 const data = await response.json();
+    //                 setEditingLesson({ ...editingLesson, material: data.filePath });
+    //             } else {
+    //                 throw new Error('Failed to upload file');
+    //             }
+    //         } catch (error) {
+    //             console.error('Error uploading file:', error);
+    //         }
+    //     };
+    //     reader.readAsDataURL(file);
+    // };
+
+
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (!file) {
@@ -52,7 +84,6 @@ export default function Lessons() {
 
         const reader = new FileReader();
         reader.onloadend = async () => {
-            // Base64 encoding logic
             const base64String = reader.result.replace('data:', '').replace(/^.+,/, '');
             try {
                 const response = await fetch('/api/upload', {
@@ -61,9 +92,9 @@ export default function Lessons() {
                     body: JSON.stringify({ file: base64String, filename: file.name }),
                 });
                 if (response.ok) {
-                    // Handle successful upload, set file path to state
                     const data = await response.json();
-                    setEditingLesson({ ...editingLesson, material: data.filePath });
+                    // Here we update the uploadedFilePath with the returned path
+                    setUploadedFilePath(data.filePath);
                 } else {
                     throw new Error('Failed to upload file');
                 }
@@ -73,7 +104,6 @@ export default function Lessons() {
         };
         reader.readAsDataURL(file);
     };
-
 
 
 
@@ -198,15 +228,55 @@ export default function Lessons() {
     };
 
     const handleUpdateLesson = async () => {
-        if (!newLesson.unit_number || !newLesson.week || !newLesson.class_ID) {
-            setErrorMessage('Unit Number, Week and Class ID are required.');
+        // Validation (add any necessary validation here)
+        if (!editingLesson.unit_number || !editingLesson.week || !editingLesson.class_ID) {
+            setErrorMessage('Unit Number, Week, and Class ID are required.');
             return;
         }
 
-        setIsEditPopupOpen(false);
-        setEditingLesson(null);
+        // Prepare the data for the API request
+        const lessonData = {
+            ...editingLesson,
+            material: uploadedFilePath, // Ensure this is the correct path for the uploaded material
+        };
 
+        try {
+            // Make an API request to update the lesson
+            const response = await fetch(`/api/lessons/update/${editingLesson.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(lessonData),
+            });
+
+            if (response.ok) {
+                // If the update is successful, you might want to fetch the updated list of lessons
+                // or update the state directly if you prefer
+                const updatedLesson = await response.json();
+                setLessons((currentLessons) => {
+                    // Update the specific lesson in your state, depending on how you've structured your lessons state
+                    // This is an example assuming lessons are stored in an object keyed by unit numbers
+                    const updatedLessons = { ...currentLessons };
+                    updatedLessons[editingLesson.unit_number] = updatedLessons[editingLesson.unit_number].map((lesson) =>
+                        lesson.id === editingLesson.id ? { ...lesson, ...updatedLesson } : lesson
+                    );
+                    return updatedLessons;
+                });
+
+                setIsEditPopupOpen(false);
+                setEditingLesson(null);
+                setSuccessMessage('Lesson updated successfully');
+            } else {
+                const errorData = await response.json();
+                setErrorMessage(errorData.message || 'Failed to update lesson');
+            }
+        } catch (error) {
+            console.error('Error updating lesson:', error);
+            setErrorMessage('An error occurred while updating the lesson.');
+        }
     };
+
 
     // ------------------ ADDING LESSONS --------------------
 
@@ -225,18 +295,58 @@ export default function Lessons() {
         }));
     };
 
+    // const handleAddNewLesson = async () => {
+    //     if (!newLesson.unit_number || !newLesson.week || !newLesson.class_ID) {
+    //         setErrorMessage('Unit Number, Week and Class ID are required.');
+    //         return;
+    //     }
+
+    //     // Constructing the lessonData with the uploaded file path
+    //     const lessonData = {
+    //         ...newLesson,
+    //         material: uploadedFilePath,
+    //     };
+
+    //     try {
+    //         const response = await fetch(`/api/lessons/add/${courseId}`, {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify(lessonData),
+    //         });
+
+    //         if (!response.ok) throw new Error('Failed to add lesson');
+    //         // Reset the form and refetch lessons
+    //         setNewLesson({
+    //             unit_number: '',
+    //             week: '',
+    //             class_ID: '',
+    //             learning_outcomes: '',
+    //             enabling_outcomes: '',
+    //             material: '',
+    //             assessment: '',
+    //             notes: '',
+    //         });
+    //         setIsPopupOpen(false);
+    //         setErrorMessage('');
+    //         fetchLessons();
+    //     } catch (error) {
+    //         console.error('Error adding lesson:', error);
+    //         setErrorMessage(error.message || 'An error occurred while adding the lesson.');
+    //     }
     const handleAddNewLesson = async () => {
+        // validate required fields
         if (!newLesson.unit_number || !newLesson.week || !newLesson.class_ID) {
-            setErrorMessage('Unit Number, Week and Class ID are required.');
+            setErrorMessage('Unit Number, Week, and Class ID are required.');
             return;
         }
-
-        // Constructing the lessonData with the uploaded file path
         const lessonData = {
             ...newLesson,
             material: uploadedFilePath,
         };
 
+        // Make an API request to add the lesson
         try {
             const response = await fetch(`/api/lessons/add/${courseId}`, {
                 method: 'POST',
@@ -246,8 +356,26 @@ export default function Lessons() {
                 body: JSON.stringify(lessonData),
             });
 
-            if (!response.ok) throw new Error('Failed to add lesson');
-            // Reset the form and refetch lessons
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to add lesson');
+            }
+
+            const addedLessonData = await response.json();
+            const addedLesson = {
+                ...lessonData,
+                id: addedLessonData.id
+            };
+
+            // Update lessons state
+            setLessons(prevLessons => {
+                const updatedLessons = { ...prevLessons };
+                const unitLessons = updatedLessons[addedLesson.unit_number] || [];
+                updatedLessons[addedLesson.unit_number] = [...unitLessons, addedLesson];
+                return updatedLessons;
+            });
+
+            // Reset form and close popup
             setNewLesson({
                 unit_number: '',
                 week: '',
@@ -260,14 +388,10 @@ export default function Lessons() {
             });
             setIsPopupOpen(false);
             setErrorMessage('');
-            fetchLessons();
         } catch (error) {
             console.error('Error adding lesson:', error);
             setErrorMessage(error.message || 'An error occurred while adding the lesson.');
         }
-
-
-
     };
 
 

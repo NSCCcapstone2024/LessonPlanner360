@@ -1,15 +1,14 @@
 import mysql from 'mysql2/promise';
 
 export default async function handler(request, response) {
-    // make sure the request is a POST
     if (request.method !== 'POST') {
         return response.status(405).end(`Method Not Allowed`);
     }
-    // get the courseId from the query string
+    // Extract the courseId from the query string and the fields from the request body
     const { courseId } = request.query;
-    // get the form data from the request body
-    const { unit_number, week, class_ID, learning_outcomes, enabling_outcomes, assessment, notes, materialPath } = request.body;
+    const { unit_number, week, class_ID, learning_outcomes, enabling_outcomes, material, assessment, notes } = request.body;
 
+    // establish a connection to the database
     try {
         const connection = await mysql.createConnection({
             host: process.env.DB_HOST,
@@ -18,11 +17,11 @@ export default async function handler(request, response) {
             database: process.env.DB_NAME,
         });
 
-        // insert the lesson into the database
+        // Insert the new lesson into the database
         const [result] = await connection.execute(
             `INSERT INTO tblLessons (course_id, unit_number, week, class_ID, learning_outcomes, enabling_outcomes, material, assessment, notes) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [courseId, unit_number, week, class_ID, learning_outcomes, enabling_outcomes, materialPath, assessment, notes]
+            [courseId, unit_number, week, class_ID, learning_outcomes, enabling_outcomes, material, assessment, notes]
         );
 
         await connection.end();
