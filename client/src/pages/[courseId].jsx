@@ -74,6 +74,40 @@ export default function Lessons() {
         reader.readAsDataURL(file);
     };
 
+    // file deletion
+    const handleDeleteFile = async (lesson) => {
+        // get the lesson id and file path
+        const lessonId = lesson.id;
+        const filePath = lesson.material;
+
+        // pass them both to the deleteFile API
+        try {
+            const response = await fetch(`/api/deleteFile?filePath=${encodeURIComponent(filePath)}&lessonId=${lessonId}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                // Update the local state to reflect the change
+                setLessons(prevLessons => {
+                    const updatedLessons = { ...prevLessons };
+                    updatedLessons[lesson.unit_number] = updatedLessons[lesson.unit_number].map(l => {
+                        if (l.id === lessonId) {
+                            // Update material to null after deletion for db
+                            return { ...l, material: null };
+                        }
+                        return l;
+                    });
+                    return updatedLessons;
+                });
+                setSuccessMessage('File deleted successfully');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to delete file');
+            }
+        } catch (error) {
+            console.error('Error deleting file:', error);
+            setErrorMessage(error.message || 'An error occurred while deleting the file.');
+        }
+    };
 
 
     //  ----------------------- FETCHING FUNCTIONS ------------------
@@ -384,9 +418,14 @@ export default function Lessons() {
                                     <p>
                                         <strong>Material:</strong>
                                         {lesson.material ? (
-                                            <a href={lesson.material} target="_blank" rel="noreferrer">
-                                                Download ({lesson.material.split('/').pop()})
-                                            </a>
+                                            <span>
+                                                <a href={lesson.material} target="_blank" rel="noreferrer">
+                                                    Download ({lesson.material.split('/').pop()})
+                                                </a>
+                                                <button onClick={() => handleDeleteFile(lesson)} title="Delete File">
+                                                    <Icon icon="typcn:delete" className="text-red-500 cursor-pointer" />
+                                                </button>
+                                            </span>
                                         ) : 'No material uploaded'}
                                     </p>
                                     <p><strong>Assessment:</strong> {lesson.assessment}</p>
