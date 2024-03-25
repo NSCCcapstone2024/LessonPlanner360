@@ -2,33 +2,23 @@ import mysql from 'mysql2/promise';
 
 export default async function handler(request, response) {
     if (request.method !== 'PUT') {
-        return response.status(405).end(`Method Not Allowed`);
+        return response.status(405).end('Method Not Allowed');
     }
 
-    const { lessonId } = request.query; // Ensure you are getting the right identifier for the lesson
+    // Extract the lessonId from the URL parameter
+    const { lessonId } = request.query;
 
-    // Use nullish coalescing to ensure no undefined values are sent to MySQL
+    // Extract the data from the request body
     const {
         unit_number,
         week,
         class_ID,
         learning_outcomes,
         enabling_outcomes,
+        material,  // Assuming material is the field name for the file path
         assessment,
-        notes,
-        materialPath
+        notes
     } = request.body;
-
-    const values = {
-        unit_number,
-        week,
-        class_ID,
-        learning_outcomes: learning_outcomes ?? null,
-        enabling_outcomes: enabling_outcomes ?? null,
-        material: materialPath ?? null, // Make sure this matches your database column name
-        assessment: assessment ?? null,
-        notes: notes ?? null
-    };
 
     try {
         const connection = await mysql.createConnection({
@@ -38,6 +28,7 @@ export default async function handler(request, response) {
             database: process.env.DB_NAME
         });
 
+        // Update the existing lesson in the database
         const [result] = await connection.execute(
             `UPDATE tblLessons SET 
                 unit_number = ?, 
@@ -50,15 +41,15 @@ export default async function handler(request, response) {
                 notes = ? 
             WHERE id = ?`,
             [
-                values.unit_number,
-                values.week,
-                values.class_ID,
-                values.learning_outcomes,
-                values.enabling_outcomes,
-                values.material,
-                values.assessment,
-                values.notes,
-                lessonId
+                unit_number,
+                week,
+                class_ID,
+                learning_outcomes,
+                enabling_outcomes,
+                material,  // Ensure this matches the column name in your database
+                assessment,
+                notes,
+                lessonId  // This should match the lesson you intend to update
             ]
         );
 

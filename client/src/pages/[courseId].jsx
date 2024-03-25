@@ -43,45 +43,14 @@ export default function Lessons() {
 
     // ----------------FILE UPLOADS-------------------
 
-    // const handleFileChange = async (e) => {
-    //     const file = e.target.files[0];
-    //     if (!file) {
-    //         console.error('No file selected');
-    //         return;
-    //     }
-
-    //     const reader = new FileReader();
-    //     reader.onloadend = async () => {
-    //         // Base64 encoding logic
-    //         const base64String = reader.result.replace('data:', '').replace(/^.+,/, '');
-    //         try {
-    //             const response = await fetch('/api/upload', {
-    //                 method: 'POST',
-    //                 headers: { 'Content-Type': 'application/json' },
-    //                 body: JSON.stringify({ file: base64String, filename: file.name }),
-    //             });
-    //             if (response.ok) {
-    //                 // Handle successful upload, set file path to state
-    //                 const data = await response.json();
-    //                 setEditingLesson({ ...editingLesson, material: data.filePath });
-    //             } else {
-    //                 throw new Error('Failed to upload file');
-    //             }
-    //         } catch (error) {
-    //             console.error('Error uploading file:', error);
-    //         }
-    //     };
-    //     reader.readAsDataURL(file);
-    // };
-
-
+    // Function to handle file uploads
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (!file) {
             console.error('No file selected');
             return;
         }
-
+        // read the file as a base64 string
         const reader = new FileReader();
         reader.onloadend = async () => {
             const base64String = reader.result.replace('data:', '').replace(/^.+,/, '');
@@ -93,7 +62,7 @@ export default function Lessons() {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    // Here we update the uploadedFilePath with the returned path
+                    // update the uploadedFilePath with the returned path
                     setUploadedFilePath(data.filePath);
                 } else {
                     throw new Error('Failed to upload file');
@@ -109,6 +78,7 @@ export default function Lessons() {
 
     //  ----------------------- FETCHING FUNCTIONS ------------------
 
+    // Fetch lessons for the course by the courseID
     useEffect(() => {
         const fetchLessons = async () => {
             if (!session || !courseId) return;
@@ -116,7 +86,7 @@ export default function Lessons() {
                 const response = await fetch(`/api/lessons/${courseId}`);
                 if (response.ok) {
                     const data = await response.json();
-                    // Assuming data is an array and converting it to the expected structure
+                    // Group lessons by unit number
                     const lessonsByUnit = data.reduce((acc, lesson) => {
                         (acc[lesson.unit_number] = acc[lesson.unit_number] || []).push(lesson);
                         return acc;
@@ -150,8 +120,9 @@ export default function Lessons() {
 
 
     // ------------------ LOGOUT --------------------
+    // check if the user is not logged in
     useEffect(() => {
-        if (status === 'unauthenticated') { // Use 'unauthenticated' to check if the user is not logged in
+        if (status === 'unauthenticated') {
             router.push('/login');
         }
     }, [status, router]);
@@ -189,16 +160,21 @@ export default function Lessons() {
                 method: 'DELETE',
             });
             if (response.ok) {
-                setLessons(prevLessons => {
-                    const updatedLessons = { ...prevLessons };
-                    updatedLessons[deletingLesson.unit_number] = updatedLessons[deletingLesson.unit_number].filter(lesson => lesson.id !== deletingLesson.id);
+                setLessons((currentLessons) => {
+                    // Create a new object to hold the updated lessons
+                    const updatedLessons = { ...currentLessons };
+
+                    // Iterate over each unit and filter out the deleted lesson
+                    Object.keys(updatedLessons).forEach(unit => {
+                        updatedLessons[unit] = updatedLessons[unit].filter(lesson => lesson.id !== deletingLesson.id);
+                    });
+
                     return updatedLessons;
                 });
+                // reset popup, user messages
                 setIsDeletePopupOpen(false);
-                // show a success message to the user
                 setSuccessMessage('Lesson deleted successfully');
                 setTimeout(() => {
-
                     setSuccessMessage('');
                 }, 3000);
             } else {
@@ -206,13 +182,14 @@ export default function Lessons() {
                 setErrorMessage(data.message || 'Failed to delete lesson');
             }
         } catch (error) {
+            console.error('Error deleting lesson:', error);
             setErrorMessage('Error deleting lesson');
         }
     };
 
 
     // ------------------ EDITING LESSONS --------------------
-    // open the popup when the edit icon is clicked
+
     const handleEditLesson = (lesson) => {
         setEditingLesson(lesson);
         setIsEditPopupOpen(true);
@@ -227,21 +204,20 @@ export default function Lessons() {
         }));
     };
 
+    // handle the update lesson function
     const handleUpdateLesson = async () => {
-        // Validation (add any necessary validation here)
-        if (!editingLesson.unit_number || !editingLesson.week || !editingLesson.class_ID) {
+        // validate required fields
+        if (!editingLesson || !editingLesson.unit_number || !editingLesson.week || !editingLesson.class_ID) {
             setErrorMessage('Unit Number, Week, and Class ID are required.');
             return;
         }
-
-        // Prepare the data for the API request
+        // Create the lesson data object and choose the filepath
         const lessonData = {
             ...editingLesson,
-            material: uploadedFilePath, // Ensure this is the correct path for the uploaded material
+            material: uploadedFilePath || editingLesson.material,
         };
 
         try {
-            // Make an API request to update the lesson
             const response = await fetch(`/api/lessons/update/${editingLesson.id}`, {
                 method: 'PUT',
                 headers: {
@@ -251,22 +227,31 @@ export default function Lessons() {
             });
 
             if (response.ok) {
-                // If the update is successful, you might want to fetch the updated list of lessons
-                // or update the state directly if you prefer
-                const updatedLesson = await response.json();
-                setLessons((currentLessons) => {
-                    // Update the specific lesson in your state, depending on how you've structured your lessons state
-                    // This is an example assuming lessons are stored in an object keyed by unit numbers
-                    const updatedLessons = { ...currentLessons };
-                    updatedLessons[editingLesson.unit_number] = updatedLessons[editingLesson.unit_number].map((lesson) =>
-                        lesson.id === editingLesson.id ? { ...lesson, ...updatedLesson } : lesson
-                    );
-                    return updatedLessons;
-                });
+                const updatedLessonData = await response.json();
 
+                setLessons((currentLessons) => {
+                    const updatedLessons = { ...currentLessons };
+                    // Iterate over each unit and update the lesson
+                    Object.keys(updatedLessons).forEach(unit => {
+                        updatedLessons[unit] = updatedLessons[unit].map((lesson) => {
+                            if (lesson.id === editingLesson.id) {
+                                return { ...lesson, ...updatedLessonData };
+                            }
+                            return lesson;
+                        });
+                    });
+                    return updatedLessons;
+
+                });
+                // reset fields, close popup and show success message
                 setIsEditPopupOpen(false);
                 setEditingLesson(null);
+                setUploadedFilePath('');
                 setSuccessMessage('Lesson updated successfully');
+                setTimeout(() => {
+                    setSuccessMessage('');
+                }, 3000);
+
             } else {
                 const errorData = await response.json();
                 setErrorMessage(errorData.message || 'Failed to update lesson');
@@ -276,6 +261,8 @@ export default function Lessons() {
             setErrorMessage('An error occurred while updating the lesson.');
         }
     };
+
+
 
 
     // ------------------ ADDING LESSONS --------------------
@@ -294,47 +281,6 @@ export default function Lessons() {
             [name]: value,
         }));
     };
-
-    // const handleAddNewLesson = async () => {
-    //     if (!newLesson.unit_number || !newLesson.week || !newLesson.class_ID) {
-    //         setErrorMessage('Unit Number, Week and Class ID are required.');
-    //         return;
-    //     }
-
-    //     // Constructing the lessonData with the uploaded file path
-    //     const lessonData = {
-    //         ...newLesson,
-    //         material: uploadedFilePath,
-    //     };
-
-    //     try {
-    //         const response = await fetch(`/api/lessons/add/${courseId}`, {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //             body: JSON.stringify(lessonData),
-    //         });
-
-    //         if (!response.ok) throw new Error('Failed to add lesson');
-    //         // Reset the form and refetch lessons
-    //         setNewLesson({
-    //             unit_number: '',
-    //             week: '',
-    //             class_ID: '',
-    //             learning_outcomes: '',
-    //             enabling_outcomes: '',
-    //             material: '',
-    //             assessment: '',
-    //             notes: '',
-    //         });
-    //         setIsPopupOpen(false);
-    //         setErrorMessage('');
-    //         fetchLessons();
-    //     } catch (error) {
-    //         console.error('Error adding lesson:', error);
-    //         setErrorMessage(error.message || 'An error occurred while adding the lesson.');
-    //     }
     const handleAddNewLesson = async () => {
         // validate required fields
         if (!newLesson.unit_number || !newLesson.week || !newLesson.class_ID) {
@@ -367,7 +313,7 @@ export default function Lessons() {
                 id: addedLessonData.id
             };
 
-            // Update lessons state
+            // update lessons state
             setLessons(prevLessons => {
                 const updatedLessons = { ...prevLessons };
                 const unitLessons = updatedLessons[addedLesson.unit_number] || [];
@@ -426,14 +372,23 @@ export default function Lessons() {
                                         <div title='Edit Lesson' onClick={() => handleEditLesson(lesson)} className="cursor-pointer">
                                             <Icon icon="ci:edit-pencil-line-01" width="24" height="24" />
                                         </div>
+
                                         <div title='Delete Lesson' onClick={() => handleDeleteConfirmation(lesson)} className="cursor-pointer">
                                             <Icon icon="solar:trash-bin-trash-linear" width="24" height="24" className="text-red-500" />
                                         </div>
                                     </div>
+                                    <p><strong>Week:</strong> {lesson.week}</p>
                                     <p><strong>Class ID:</strong> {lesson.class_ID}</p>
                                     <p><strong>Learning Outcomes:</strong> {lesson.learning_outcomes}</p>
                                     <p><strong>Enabling Outcomes:</strong> {lesson.enabling_outcomes}</p>
-                                    <p><strong>Material:</strong> <a href={lesson.material} target="_blank" rel="noreferrer">Download</a></p>
+                                    <p>
+                                        <strong>Material:</strong>
+                                        {lesson.material ? (
+                                            <a href={lesson.material} target="_blank" rel="noreferrer">
+                                                Download ({lesson.material.split('/').pop()})
+                                            </a>
+                                        ) : 'No material uploaded'}
+                                    </p>
                                     <p><strong>Assessment:</strong> {lesson.assessment}</p>
                                     <p><strong>Notes:</strong> {lesson.notes}</p>
                                 </div>
