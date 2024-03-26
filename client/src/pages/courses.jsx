@@ -7,6 +7,7 @@ import { useSession, signOut } from 'next-auth/react';
 export default function Courses() {
 
     // ---------------------STATE---------------------
+    const [theme, setTheme] = useState('light');
     const { data: session, status } = useSession();
     const username = session?.user?.name
     const router = useRouter();
@@ -35,6 +36,17 @@ export default function Courses() {
         course_name: '',
         course_code: ''
     });
+
+    // Function to toggle between light and dark themes
+    const toggleTheme = () => {
+        const newTheme = theme === 'light' ? 'dark' : 'light';
+        setTheme(newTheme);
+
+        // Update theme class on the body
+        document.body.classList.toggle('dark', newTheme === 'dark');
+        document.body.classList.toggle('light', newTheme === 'light');
+    };
+
 
     //---------------------FETCH functions---------------------
     // Fetch the list of courses from the server
@@ -286,8 +298,6 @@ export default function Courses() {
         }
     };
 
-
-
     // Function to handle cancelling the archive action
     const handleCancelArchive = () => {
         // Close the confirmation popup without archiving
@@ -306,7 +316,6 @@ export default function Courses() {
         setIsDeletePopupOpen(false);
         setDeletingCourse(null);
     };
-
 
     // handle the deletion of the archived courses
     const handleConfirmDelete = async () => {
@@ -350,159 +359,206 @@ export default function Courses() {
         }
     };
 
+    // ---------------------COPY funcitons---------------------
+    const handleCopyCourse = async (course) => {
+        try {
+            console.log('Copying course:', course);
+            const response = await fetch(`/api/courses/copy/${course.id}`, {
+                method: 'POST',
+            });
+
+            console.log('Response:', response);
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Course copied successfully with ID:', data.newCourseId);
+                fetchCourses();
+                fetchArchivedCourses();
+            } else {
+                console.error('Failed to copy course');
+            }
+        } catch (error) {
+            console.error('Error copying course:', error);
+        }
+    };
+
     return (
-        <div className="container mx-auto px-4 pt-8">
-            <div className="flex items-center justify-between mb-4">
-                <div title="Logout" className="ml-4" onClick={handleLogout}>
-                    <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" />
+        <div>
+            <style jsx global>{`
+                body {
+                background-color: ${theme === 'dark' ? '#222222' : '#ffffff'};
+                color: ${theme === 'dark' ? '#ffffff' : '#000000'};
+                }
+            `}</style>
+            <div className={`container mx-auto px-4 pt-8`}>
+                {/* Theme toggles */}
+                <div className="absolute top-4 right-4">
+                    <button onClick={toggleTheme} className="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded-md text-gray-800 dark:text-gray-200 mt-3" style={{ backgroundColor: theme === 'dark' ? '#374151' : '#d1d5db', color: theme === 'dark' ? '#ffffff' : '#000000' }}>
+                        {theme === 'light' ? 'Dark' : 'Light'} Theme
+                    </button>
                 </div>
-                <div>
-                    <p className="text-2xl font-bold">Welcome {username} ! </p>
-                </div>
-                <div className="flex items-center">
-                    <div title="Add a new course" className="ml-4">
-                        <Icon icon="bx:bxs-plus-circle" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" onClick={handleAddCourse} />
+                <div className="flex items-center justify-between mb-4">
+                    <div title="Logout" className="ml-4" onClick={handleLogout}>
+                        <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" />
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold">Welcome {username} ! </p>
+                    </div>
+                    <div className="flex items-center">
+                        <div title="Add a new course" className="mr-10">
+                            <Icon icon="bx:bxs-plus-circle" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" onClick={handleAddCourse} />
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {courses.map((course, index) => (
-                    <div key={index} className="relative bg-gray-100 p-4 rounded-lg">
-                        <div className="flex justify-between items-center mb-4">
-                            <div>
-                                {/* Display course_code and year together */}
-                                <p className="text-lg font-semibold">
-                                    <button
-                                        onClick={() => getLessons(course.id, course.course_name)}
-                                        className="text-lg font-semibold hover:underline focus:outline-none"
-                                        style={{ all: 'unset', cursor: 'pointer' }}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {courses.map((course, index) => (
+                        <div key={index} className="relative bg-gray-100 p-4 rounded-lg">
+                            <div className="flex justify-between items-center mb-4">
+                                <div>
+                                    {/* Display course_code and year together */}
+                                    <p className="text-lg font-semibold">
+                                        <button
+                                            onClick={() => getLessons(course.id, course.course_name)}
+                                            className="text-lg font-semibold hover:underline focus:outline-none"
+                                            style={{ all: 'unset', cursor: 'pointer' }}
+                                        >
+                                            <span className="text-black">{course.course_code} - {course.year}</span>
+                                        </button>
+                                    </p>
+                                    <p className="text-gray-800">{course.course_name}</p>
+                                </div>
+
+                                {/* Edit and Archive icons */}
+                                <div className="flex items-center">
+                                    <div className="flex-grow" title='Edit Course' onClick={() => handleEditCourse(course)}>
+                                        <span className="text-black"><Icon icon="ci:edit-pencil-line-01" width="24" height="24" className="cursor-pointer" /></span>
+                                    </div>
+                                    <div className="w-px h-6 bg-gray-400 mx-2"></div>
+                                    <div className="flex-grow" title='Archive Page' onClick={() => handleArchiveConfirmation(course)}>
+                                        <Icon icon="fluent:archive-arrow-back-16-regular" width="24" height="24" className="text-red-500 cursor-pointer" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                {
+                    isPopupOpen && (
+                        <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                            <div className="bg-gray-300 p-20 rounded-lg">
+                                <h2 className="text-xl font-bold mb-4"><span className="text-black">Add New Course</span></h2>
+                                <div className="mb-6">
+                                    <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                                    <input type="text" id="year" name="year" value={newCourse.year} onChange={handleInputChange} placeholder="Enter year" className="border-gray-300 border rounded-md p-2 block w-96 " maxLength={4} />
+                                </div>
+                                <div className="mb-6">
+                                    <label htmlFor="course_code" className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
+                                    <input type="text" id="course_code" name="course_code" value={newCourse.course_code} onChange={handleInputChange} placeholder="Enter course code" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
+                                </div>
+                                <div className="mb-6">
+                                    <label htmlFor="course_name" className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                                    <input type="text" id="course_name" name="course_name" value={newCourse.course_name} onChange={handleInputChange} placeholder="Enter course name" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
+                                </div>
+                                <div className="flex justify-between">
+                                    <button onClick={handleAddNewCourse} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Add Course</button>
+                                    <button onClick={closePopupAndResetForm} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                                </div>
+                                {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
+                            </div>
+                        </div>
+                    )
+                }
+                {
+                    isEditPopupOpen && editingCourse && (
+                        <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                            <div className="bg-gray-300 p-20 rounded-lg">
+                                <h2 className="text-xl font-bold mb-4"><span className="text-black">Edit Course</span></h2>
+                                <div className="mb-6">
+                                    <label htmlFor="editYear" className="block text-sm font-medium text-gray-700 mb-1">Year:</label>
+                                    <span className="text-black"><input type="text" id="editYear" name="year" value={editingCourse.year || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" /></span>
+                                </div>
+                                <div className="mb-6">
+                                    <label htmlFor="editcourse_code" className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
+                                    <span className="text-black"><input type="text" id="editcourse_code" name="course_code" value={editingCourse.course_code || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} /></span>
+                                </div>
+                                <div className="mb-6">
+                                    <label htmlFor="editcourse_name" className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                                    <span className="text-black"><input type="text" id="editcourse_name" name="course_name" value={editingCourse.course_name || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} /></span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <button onClick={() => handleUpdateCourse(editingCourse.id)} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Update Course</button>
+                                    <button onClick={closeEditPopupAndReset} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                                </div>
+                                {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
+                            </div>
+                        </div>
+                    )
+                }
+                {
+                    isArchivePopupOpen && archivingCourse && (
+                        <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                            <div className="bg-gray-300 p-20 rounded-lg">
+                                <h2 className="text-xl font-bold mb-4"><span className='text-black'>Archive Course</span><Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
+                                <p className='text-lg mb-8'><span className='text-black'>Are you sure you want to archive the course {archivingCourse.course_name} ({archivingCourse.course_code})?</span></p>
+                                <div className="flex justify-between mt-4">
+                                    <button onClick={handleConfirmArchive} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Archive</button>
+                                    <button onClick={handleCancelArchive} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                }
+                <div className="mt-8">
+                    <h2 className="text-xl font-bold mb-4">Archived Courses</h2>
+                    {archivedCourses.map((course, index) => (
+                        <div key={index} className="bg-gray-100 p-4 rounded-lg mb-4">
+                            {/* Display archived course code, archived year (if available), and course name */}
+                            <p className="text-lg font-semibold">
+                                <span className="text-black">{course.course_code} - {course.archived_year ? <span className="text-black">{course.archived_year}</span> : new Date().getFullYear()}</span>
+                            </p>
+                            <span className="text-black"><p>{course.course_name}</p></span>
+
+                            <div className="mt-2 flex justify-end space-x-2">
+                                <button
+                                    onClick={() => handleDeleteConfirmation(course)}
+                                    className="bg-red-500 text-white px-4 py-2 rounded-md"
+                                >
+                                    Delete
+                                </button>
+                                <button
+                                    onClick={() => handleRetrieveCourse(course)}
+                                    className="bg-green-500 text-white px-4 py-2 rounded-md"
+                                >
+                                    Retrieve
+                                </button>
+                                <div>
+                                    <button onClick={() => handleCopyCourse(course)}
+                                        className="bg-blue-500 text-white px-4 py-2 rounded-md"
                                     >
-                                        {course.course_code} - <span className="text-black">{course.year}</span>
+                                        Copy
                                     </button>
-                                </p>
-                                <p className="text-gray-800">{course.course_name}</p>
-                            </div>
-                            {/* Edit and Archive icons */}
-                            <div className="flex items-center">
-                                <div className="flex-grow" title='Edit Course' onClick={() => handleEditCourse(course)}>
-                                    <Icon icon="ci:edit-pencil-line-01" width="24" height="24" className="cursor-pointer" />
                                 </div>
-                                <div className="w-px h-6 bg-gray-400 mx-2"></div>
-                                <div className="flex-grow" title='Archive Page' onClick={() => handleArchiveConfirmation(course)}>
-                                    <Icon icon="fluent:archive-arrow-back-16-regular" width="24" height="24" className="text-red-500 cursor-pointer" />
+
+                            </div>
+                        </div>
+                    ))}
+
+                    {isDeletePopupOpen && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                            <div className="bg-white p-20 rounded-lg shadow-lg ">
+                                <span className="text-black">
+                                    <h2 className="text-xl font-bold mb-4">Delete Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
+                                    <p className='text-lg'>Are you sure you want to delete this course and all of its contents: {deletingCourse?.course_name}?</p>
+                                </span>
+                                <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!!</p>
+                                <div className="flex justify-between mt-4">
+                                    <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
+                                    <button onClick={closeDeletePopup} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
                                 </div>
-                            </div>
                         </div>
-                    </div>
-                ))}
-            </div>
-            {
-                isPopupOpen && (
-                    <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                        <div className="bg-gray-300 p-20 rounded-lg">
-                            <h2 className="text-xl font-bold mb-4">Add New Course</h2>
-                            <div className="mb-6">
-                                <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">Year</label>
-                                <input type="text" id="year" name="year" value={newCourse.year} onChange={handleInputChange} placeholder="Enter year" className="border-gray-300 border rounded-md p-2 block w-96 " maxLength={4} />
-                            </div>
-                            <div className="mb-6">
-                                <label htmlFor="course_code" className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
-                                <input type="text" id="course_code" name="course_code" value={newCourse.course_code} onChange={handleInputChange} placeholder="Enter course code" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
-                            </div>
-                            <div className="mb-6">
-                                <label htmlFor="course_name" className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
-                                <input type="text" id="course_name" name="course_name" value={newCourse.course_name} onChange={handleInputChange} placeholder="Enter course name" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
-                            </div>
-                            <div className="flex justify-between">
-                                <button onClick={handleAddNewCourse} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Add Course</button>
-                                <button onClick={closePopupAndResetForm} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-                            </div>
-                            {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
-                        </div>
-                    </div>
-                )
-            }
-            {
-                isEditPopupOpen && editingCourse && (
-                    <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                        <div className="bg-gray-300 p-20 rounded-lg">
-                            <h2 className="text-xl font-bold mb-4">Edit Course</h2>
-                            <div className="mb-6">
-                                <label htmlFor="editYear" className="block text-sm font-medium text-gray-700 mb-1">Year:</label>
-                                <input type="text" id="editYear" name="year" value={editingCourse.year || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" />
-                            </div>
-                            <div className="mb-6">
-                                <label htmlFor="editcourse_code" className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
-                                <input type="text" id="editcourse_code" name="course_code" value={editingCourse.course_code || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
-                            </div>
-                            <div className="mb-6">
-                                <label htmlFor="editcourse_name" className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
-                                <input type="text" id="editcourse_name" name="course_name" value={editingCourse.course_name || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
-                            </div>
-                            <div className="flex justify-between">
-                                <button onClick={() => handleUpdateCourse(editingCourse.id)} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Update Course</button>
-                                <button onClick={closeEditPopupAndReset} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-                            </div>
-                            {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
-                        </div>
-                    </div>
-                )
-            }
-            {
-                isArchivePopupOpen && archivingCourse && (
-                    <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                        <div className="bg-gray-300 p-20 rounded-lg">
-                            <h2 className="text-xl font-bold mb-4">Archive Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
-                            <p className='text-lg mb-8'>Are you sure you want to archive the course {archivingCourse.course_name} ({archivingCourse.course_code})?</p>
-                            <div className="flex justify-between mt-4">
-                                <button onClick={handleConfirmArchive} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Archive</button>
-                                <button onClick={handleCancelArchive} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-            <div className="mt-8">
-                <h2 className="text-xl font-bold mb-4">Archived Courses</h2>
-                {archivedCourses.map((course, index) => (
-                    <div key={index} className="bg-gray-100 p-4 rounded-lg mb-4">
-                        {/* Display archived course code, archived year (if available), and course name */}
-                        <p className="text-lg font-semibold">
-                            {course.course_code} - {course.archived_year ? <span className="text-black">{course.archived_year}</span> : new Date().getFullYear()}
-                        </p>
-                        <p>{course.course_name}</p>
-
-                        <div className="mt-2 flex justify-end space-x-2">
-                            <button
-                                onClick={() => handleDeleteConfirmation(course)}
-                                className="bg-red-500 text-white px-4 py-2 rounded-md"
-                            >
-                                Delete
-                            </button>
-                            <button
-                                onClick={() => handleRetrieveCourse(course)}
-                                className="bg-green-500 text-white px-4 py-2 rounded-md"
-                            >
-                                Retrieve
-                            </button>
-                        </div>
-                    </div>
-                ))}
-
-                {isDeletePopupOpen && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                        <div className="bg-gray-300 p-20 rounded-lg shadow-lg ">
-                            <h2 className="text-xl font-bold mb-4">Delete Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
-                            <p className='text-lg'>Are you sure you want to delete this course and all of its contents: {deletingCourse?.course_name}?</p>
-                            <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!!</p>
-                            <div className="flex justify-between mt-4">
-                                <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
-                                <button onClick={closeDeletePopup} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                    ))}
+                </div>
             </div>
         </div>
     );
