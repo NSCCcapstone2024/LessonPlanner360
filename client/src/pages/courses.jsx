@@ -110,6 +110,7 @@ export default function Courses() {
     };
     //---------------------ADD funcitons---------------------
 
+
     const handleAddCourse = () => {
         setIsPopupOpen(true);
         setErrorMessage('');
@@ -491,7 +492,7 @@ export default function Courses() {
 
                 {isDeletePopupOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                        <div className="bg-white p-20 rounded-lg shadow-lg ">
+                        <div className="bg-gray-300 p-20 rounded-lg shadow-lg ">
                             <h2 className="text-xl font-bold mb-4">Delete Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
                             <p className='text-lg'>Are you sure you want to delete this course and all of its contents: {deletingCourse?.course_name}?</p>
                             <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!!</p>
