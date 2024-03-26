@@ -122,6 +122,7 @@ export default function Courses() {
     };
     //---------------------ADD funcitons---------------------
 
+
     const handleAddCourse = () => {
         setIsPopupOpen(true);
         setErrorMessage('');
@@ -555,9 +556,8 @@ export default function Courses() {
                                     <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
                                     <button onClick={closeDeletePopup} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
                                 </div>
-                            </div>
                         </div>
-                    )}
+                    ))}
                 </div>
             </div>
         </div>
