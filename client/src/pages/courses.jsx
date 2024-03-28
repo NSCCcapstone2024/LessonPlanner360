@@ -3,13 +3,11 @@ import { useRouter } from 'next/router';
 import { Icon } from '@iconify-icon/react';
 import { useSession, signOut } from 'next-auth/react';
 
-
 export default function Courses() {
-
     // ---------------------STATE---------------------
     const [theme, setTheme] = useState('light');
     const { data: session, status } = useSession();
-    const username = session?.user?.name
+    const username = session?.user?.name;
     const router = useRouter();
 
     // POPUPS
@@ -19,7 +17,7 @@ export default function Courses() {
     const [isArchivePopupOpen, setIsArchivePopupOpen] = useState(false);
     const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
 
-    //Action states
+    // Action states
     const [deletingCourse, setDeletingCourse] = useState(null);
     const [editingCourse, setEditingCourse] = useState(null);
     const [archivingCourse, setArchivingCourse] = useState(null);
@@ -47,7 +45,6 @@ export default function Courses() {
         document.body.classList.toggle('light', newTheme === 'light');
     };
 
-
     //---------------------FETCH functions---------------------
     // Fetch the list of courses from the server
     const fetchCourses = async () => {
@@ -70,7 +67,8 @@ export default function Courses() {
             fetchCourses();
         }
     }, [session]);
-    // check if the course code is unique
+
+    // Check if the course code is unique
     useEffect(() => {
         const timer = setTimeout(() => {
             if (courseCode.trim() !== '') {
@@ -98,41 +96,40 @@ export default function Courses() {
         fetchArchivedCourses();
     }, []);
 
-    // redirect to the corresponding lessons page
+    // Redirect to the corresponding lessons page
     const getLessons = (courseId, courseName) => {
         router.push(`${courseId}?courseName=${encodeURIComponent(courseName)}`);
     };
 
     // ---------------------AUTHENTICATION---------------------
-    // make sure that if the user is not autheticated, they cannot access any of the inner pages of the app.
+    // Make sure that if the user is not authenticated, they cannot access any of the inner pages of the app.
     useEffect(() => {
         if (status !== "loading" && !session) {
             router.push('/login');
         }
     }, [session, status, router]);
 
-
     if (status === "loading") {
         return <div>Loading...</div>;
     }
 
-    // logout function
+    // Logout function
     const handleLogout = () => {
         signOut({ callbackUrl: '/login' });
     };
-    //---------------------ADD funcitons---------------------
 
+    //---------------------ADD functions---------------------
 
     const handleAddCourse = () => {
         setIsPopupOpen(true);
         setErrorMessage('');
     };
 
-    // event handler for adding a new course
+    // Event handler for adding a new course
     const handleAddNewCourse = async () => {
         // VALIDATION- Check if either field is empty and set an error message if so
         if (!newCourse.course_code.trim() || !newCourse.course_name.trim() || !newCourse.year) {
-            setErrorMessage('Course code, course name and year are required.');
+            setErrorMessage('Course code, course name, and year are required.');
             return;
         }
         try {
@@ -171,12 +168,11 @@ export default function Courses() {
             [name]: value
         }));
         if (name === 'course_code') {
-            // check for uniqueness and clear error message
+            // Check for uniqueness and clear error message
             setCourseCode(value);
             setErrorMessage('');
         }
     };
-
 
     // Close add popup - reset everything
     const closePopupAndResetForm = () => {
@@ -185,8 +181,7 @@ export default function Courses() {
         setErrorMessage('');
     };
 
-
-    //---------------------EDIT funcitons---------------------
+    //---------------------EDIT functions---------------------
     // Close edit popup - reset everything
     const closeEditPopupAndReset = () => {
         setIsEditPopupOpen(false);
@@ -213,7 +208,7 @@ export default function Courses() {
 
         // VALIDATION- Check if either field is empty and set an error message if so
         if (!course_code.trim() || !course_name.trim() || !year) {
-            setErrorMessage('Course code, course name and year are required.');
+            setErrorMessage('Course code, course name, and year are required.');
             return;
         }
 
@@ -242,9 +237,9 @@ export default function Courses() {
         }
     };
 
-    //---------------------ARCHIVE funcitons---------------------
+    //---------------------ARCHIVE functions---------------------
 
-    // fetch ONLY the courses that have been marked as "1" or archived
+    // Fetch ONLY the courses that have been marked as "1" or archived
     const fetchArchivedCourses = async () => {
         try {
             const res = await fetch('/api/courses/archived');
@@ -304,20 +299,20 @@ export default function Courses() {
         setIsArchivePopupOpen(false);
     };
 
-    //---------------------DELETE funcitons---------------------
+    //---------------------DELETE functions---------------------
     // Delete popup
     const handleDeleteConfirmation = (course) => {
         setDeletingCourse(course);
         setIsDeletePopupOpen(true);
     };
 
-    //Close delete popup and reset everything
+    // Close delete popup and reset everything
     const closeDeletePopup = () => {
         setIsDeletePopupOpen(false);
         setDeletingCourse(null);
     };
 
-    // handle the deletion of the archived courses
+    // Handle the deletion of the archived courses
     const handleConfirmDelete = async () => {
         try {
             const response = await fetch(`/api/delete/${deletingCourse.id}`, {
@@ -336,9 +331,8 @@ export default function Courses() {
         }
     };
 
-    // ---------------------RETRIEVE funcitons---------------------
-
-    // fetch the restored courses
+    //---------------------RETRIEVE functions---------------------
+    // Fetch the restored courses
     const handleRetrieveCourse = async (course) => {
         try {
             const res = await fetch(`/api/courses/restore/${course.id}`, {
@@ -352,14 +346,14 @@ export default function Courses() {
             setArchivedCourses(updatedArchivedCourses);
             // Add the course back to the active list
             setCourses(prevCourses => [course, ...prevCourses]);
-            // fetch the updated list of courses
+            // Fetch the updated list of courses
             fetchCourses();
         } catch (error) {
             console.error('Error restoring course:', error);
         }
     };
 
-    // ---------------------COPY funcitons---------------------
+    //---------------------COPY functions---------------------
     const handleCopyCourse = async (course) => {
         try {
             console.log('Copying course:', course);
@@ -480,14 +474,14 @@ export default function Courses() {
                                 </div>
                                 <div className="mb-6">
                                     <label htmlFor="editcourse_code" className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
-                                    <span className="text-black"><input type="text" id="editcourse_code" name="course_code" value={editingCourse.course_code || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} /></span>
+                                    <span className="text-black"><input type="text" id="editcourse_code" name="course_code" value={editingCourse.course_code || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" /></span>
                                 </div>
                                 <div className="mb-6">
                                     <label htmlFor="editcourse_name" className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
-                                    <span className="text-black"><input type="text" id="editcourse_name" name="course_name" value={editingCourse.course_name || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} /></span>
+                                    <span className="text-black"><input type="text" id="editcourse_name" name="course_name" value={editingCourse.course_name || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" /></span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <button onClick={() => handleUpdateCourse(editingCourse.id)} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Update Course</button>
+                                    <button onClick={handleUpdateCourse} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Update Course</button>
                                     <button onClick={closeEditPopupAndReset} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
                                 </div>
                                 {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
@@ -499,11 +493,11 @@ export default function Courses() {
                     isArchivePopupOpen && archivingCourse && (
                         <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
                             <div className="bg-gray-300 p-20 rounded-lg">
-                                <h2 className="text-xl font-bold mb-4"><span className='text-black'>Archive Course</span><Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
-                                <p className='text-lg mb-8'><span className='text-black'>Are you sure you want to archive the course {archivingCourse.course_name} ({archivingCourse.course_code})?</span></p>
+                                <h2 className="text-xl font-bold mb-4"><span className="text-black">Archive Course</span></h2>
+                                <p className="text-black">Are you sure you want to archive {archivingCourse.course_code} - {archivingCourse.year}?</p>
                                 <div className="flex justify-between mt-4">
-                                    <button onClick={handleConfirmArchive} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Archive</button>
-                                    <button onClick={handleCancelArchive} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                                    <button onClick={handleConfirmArchive} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes</button>
+                                    <button onClick={handleCancelArchive} className="bg-gray-500 text-white px-4 py-2 rounded-md">No</button>
                                 </div>
                             </div>
                         </div>
