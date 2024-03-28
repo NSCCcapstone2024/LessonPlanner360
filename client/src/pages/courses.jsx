@@ -383,11 +383,11 @@ export default function Courses() {
     };
 
     return (
-        <div>
+        <>
             <style jsx global>{`
                 body {
-                background-color: ${theme === 'dark' ? '#222222' : '#ffffff'};
-                color: ${theme === 'dark' ? '#ffffff' : '#000000'};
+                    background-color: ${theme === 'dark' ? '#222222' : '#ffffff'};
+                    color: ${theme === 'dark' ? '#ffffff' : '#000000'};
                 }
             `}</style>
             <div className={`container mx-auto px-4 pt-8`}>
@@ -402,7 +402,7 @@ export default function Courses() {
                         <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" />
                     </div>
                     <div>
-                        <p className="text-2xl font-bold">Welcome {username} ! </p>
+                        <p className="text-2xl font-bold">Welcome {username}!</p>
                     </div>
                     <div className="flex items-center">
                         <div title="Add a new course" className="mr-10">
@@ -543,23 +543,24 @@ export default function Courses() {
                             </div>
                         </div>
                     ))}
-
-                    {isDeletePopupOpen && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                            <div className="bg-white p-20 rounded-lg shadow-lg ">
-                                <span className="text-black">
-                                    <h2 className="text-xl font-bold mb-4">Delete Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
-                                    <p className='text-lg'>Are you sure you want to delete this course and all of its contents: {deletingCourse?.course_name}?</p>
-                                </span>
-                                <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!!</p>
-                                <div className="flex justify-between mt-4">
-                                    <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
-                                    <button onClick={closeDeletePopup} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-                                </div>
-                        </div>
-                    ))}
                 </div>
+
+                {isDeletePopupOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                        <div className="bg-white p-20 rounded-lg shadow-lg ">
+                            <span className="text-black">
+                                <h2 className="text-xl font-bold mb-4">Delete Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
+                                <p className='text-lg'>Are you sure you want to delete this course and all of its contents: {deletingCourse?.course_name}?</p>
+                            </span>
+                            <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!!</p>
+                            <div className="flex justify-between mt-4">
+                                <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
+                                <button onClick={closeDeletePopup} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
-        </div>
+        </>
     );
 }
