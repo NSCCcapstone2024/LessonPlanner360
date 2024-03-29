@@ -407,7 +407,8 @@ export default function Courses() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {courses.map((course, index) => (
-                        <div key={index} className="relative bg-gray-100 p-4 rounded-lg">
+                        // <div key={index} className="relative bg-gray-100 p-4 rounded-lg">
+                        <div key={index} className={`bg-gray-100 p-4 rounded-lg mb-4 ${theme === 'dark' ? 'bg-gray-800' : ''}`}>
                             <div className="flex justify-between items-center mb-4">
                                 <div>
                                     {/* Display course_code and year together */}
@@ -417,16 +418,16 @@ export default function Courses() {
                                             className="text-lg font-semibold hover:underline focus:outline-none"
                                             style={{ all: 'unset', cursor: 'pointer' }}
                                         >
-                                            <span className="text-black">{course.course_code} - {course.year}</span>
+                                            {course.course_code} - {course.year}
                                         </button>
                                     </p>
-                                    <p className="text-gray-800">{course.course_name}</p>
+                                    {course.course_name}
                                 </div>
 
                                 {/* Edit and Archive icons */}
                                 <div className="flex items-center">
                                     <div className="flex-grow" title='Edit Course' onClick={() => handleEditCourse(course)}>
-                                        <span className="text-black"><Icon icon="ci:edit-pencil-line-01" width="24" height="24" className="cursor-pointer" /></span>
+                                        <Icon icon="ci:edit-pencil-line-01" width="24" height="24" className="cursor-pointer" />
                                     </div>
                                     <div className="w-px h-6 bg-gray-400 mx-2"></div>
                                     <div className="flex-grow" title='Archive Page' onClick={() => handleArchiveConfirmation(course)}>
@@ -506,34 +507,32 @@ export default function Courses() {
                 <div className="mt-8">
                     <h2 className="text-xl font-bold mb-4">Archived Courses</h2>
                     {archivedCourses.map((course, index) => (
-                        <div key={index} className="bg-gray-100 p-4 rounded-lg mb-4">
+                        <div key={index} className={`bg-gray-100 p-4 rounded-lg mb-4 ${theme === 'dark' ? 'bg-gray-800' : ''}`}>
                             {/* Display archived course code, archived year (if available), and course name */}
                             <p className="text-lg font-semibold">
-                                <span className="text-black">{course.course_code} - {course.archived_year ? <span className="text-black">{course.archived_year}</span> : new Date().getFullYear()}</span>
+                                <span className={`text-${theme === 'dark' ? 'white' : 'black'}`}>{course.course_code} - {course.archived_year ? <span className={`text-${theme === 'dark' ? 'white' : 'black'}`}>{course.archived_year}</span> : new Date().getFullYear()}</span>
                             </p>
-                            <span className="text-black"><p>{course.course_name}</p></span>
+                            <span className={`text-${theme === 'dark' ? 'white' : 'black'}`}><p>{course.course_name}</p></span>
 
                             <div className="mt-2 flex justify-end space-x-2">
                                 <button
                                     onClick={() => handleDeleteConfirmation(course)}
-                                    className="bg-red-500 text-white px-4 py-2 rounded-md"
+                                    className={`px-4 py-2 rounded-md ${theme === 'dark' ? 'bg-red-900 text-white' : 'bg-red-400 text-white'}`}
                                 >
                                     Delete
                                 </button>
                                 <button
                                     onClick={() => handleRetrieveCourse(course)}
-                                    className="bg-green-500 text-white px-4 py-2 rounded-md"
+                                    className={`px-4 py-2 rounded-md ${theme === 'dark' ? 'bg-green-900 text-white' : 'bg-green-400 text-white'}`}
                                 >
                                     Retrieve
                                 </button>
-                                <div>
-                                    <button onClick={() => handleCopyCourse(course)}
-                                        className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                                    >
-                                        Copy
-                                    </button>
-                                </div>
-
+                                <button
+                                    onClick={() => handleCopyCourse(course)}
+                                    className={`px-4 py-2 rounded-md ${theme === 'dark' ? 'bg-blue-900 text-white' : 'bg-blue-400 text-white'}`}
+                                >
+                                    Copy
+                                </button>
                             </div>
                         </div>
                     ))}
