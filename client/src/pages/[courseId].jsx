@@ -426,7 +426,7 @@ export default function Lessons() {
                 {Object.keys(lessons).map((unit, index) => (
                     <div key={unit} className="mb-4">
                         <button onClick={() => toggleUnitVisibility(unit)} className="text-lg font-bold">
-                            Unit {unit}
+                            Unit {unit} <Icon icon="octicon:triangle-down-16" className="ml-2 mt-2 text-gray-500 cursor-pointer" width="24" height="24" />
                         </button>
                         {isUnitOpen[unit] && (
                             <div className="mt-2">
