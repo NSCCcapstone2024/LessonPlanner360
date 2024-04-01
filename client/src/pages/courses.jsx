@@ -356,16 +356,14 @@ export default function Courses() {
     //---------------------COPY functions---------------------
     const handleCopyCourse = async (course) => {
         try {
-            console.log('Copying course:', course);
-            const response = await fetch(`/api/courses/copy/${course.id}`, {
+            const response = await fetch(`/api/copy/${course.id}`, {
                 method: 'POST',
             });
-
-            console.log('Response:', response);
 
             if (response.ok) {
                 const data = await response.json();
                 console.log('Course copied successfully with ID:', data.newCourseId);
+                // Optionally, you can fetch the updated list of courses here
                 fetchCourses();
                 fetchArchivedCourses();
             } else {
@@ -375,6 +373,7 @@ export default function Courses() {
             console.error('Error copying course:', error);
         }
     };
+
 
     return (
         <>
