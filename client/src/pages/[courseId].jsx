@@ -48,6 +48,7 @@ export default function Lessons() {
         document.body.classList.toggle('light', newTheme === 'light');
     };
 
+    // Function to get status summaries for each unit to display in the UI
     const getStatusSummaries = (lessonsByUnit) => {
         return Object.keys(lessonsByUnit).reduce((acc, unit) => {
             const statusSummary = lessonsByUnit[unit].reduce((summary, lesson) => {
@@ -60,7 +61,7 @@ export default function Lessons() {
         }, {});
     };
 
-
+    // Update status summaries when lessons change
     useEffect(() => {
         const summaries = getStatusSummaries(lessons);
         setStatusSummaries(summaries);
@@ -179,10 +180,10 @@ export default function Lessons() {
     // dynamically change background colour of each unit based on theme
     const getBackgroundColor = (unitNumber) => {
         if (theme === 'dark') {
-            const darkColors = ["bg-gray-600", "bg-red-900", "bg-blue-600", "bg-green-600"];
+            const darkColors = ["bg-gray-600", "bg-red-900", "bg-blue-600", "bg-green-600", "bg-yellow-600", "bg-indigo-600", "bg-pink-600", "bg-purple-600", "bg-cyan-600", "bg-rose-600"];
             return darkColors[unitNumber % darkColors.length];
         } else {
-            const lightColors = ["bg-slate-300", "bg-red-300", "bg-blue-300", "bg-green-300"];
+            const lightColors = ["bg-slate-300", "bg-red-300", "bg-blue-300", "bg-green-300", "bg-yellow-300", "bg-indigo-300", "bg-pink-300", "bg-purple-300", "bg-cyan-300", "bg-rose-300"];
             return lightColors[unitNumber % lightColors.length];
         }
     };
@@ -444,7 +445,7 @@ export default function Lessons() {
                     <div key={unit} className="mb-4">
                         <button onClick={() => toggleUnitVisibility(unit)} className="text-lg font-bold">
                             Unit {unit} <Icon icon="octicon:triangle-down-16" className="ml-2 mt-2 text-gray-500 cursor-pointer" width="24" height="24" />
-                            <div>
+                            <div className='text-sm'>
                                 {statusSummaries[unit] && `${statusSummaries[unit].prepped}/${lessons[unit].length} lessons prepped, ${statusSummaries[unit].completed}/${lessons[unit].length} lessons completed, ${statusSummaries[unit].neither}/${lessons[unit].length} lessons not done`}
                             </div>
                         </button>
@@ -540,11 +541,11 @@ export default function Lessons() {
                                     <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                                     <textarea id="notes" name="notes" value={newLesson.notes} onChange={handleInputChange} placeholder="Enter Notes" className="border-gray-300 border rounded-md p-2 block w-96 h-32 resize-vertical" />
                                 </div>
-                                <div>
-                                    <label>Status:</label>
-                                    <input type="radio" name="status" value="prepped" onChange={handleInputChange} checked={newLesson.status === 'prepped'} /> Prepped
-                                    <input type="radio" name="status" value="completed" onChange={handleInputChange} checked={newLesson.status === 'completed'} /> Completed
-                                    <input type="radio" name="status" value="neither" onChange={handleInputChange} checked={newLesson.status === 'neither'} /> Neither
+                                <div className="mb-6 border-2 border-gray-200 rounded p-3">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Status:</label>
+                                    <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="prepped" onChange={handleInputChange} checked={newLesson.status === 'prepped'} /> Prepped
+                                    <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="completed" onChange={handleInputChange} checked={newLesson.status === 'completed'} /> Completed
+                                    <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="neither" onChange={handleInputChange} checked={newLesson.status === 'neither'} /> Neither
                                 </div>
                                 <div className="flex justify-between">
                                     <button onClick={handleAddNewLesson} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Add Lesson</button>
@@ -646,11 +647,11 @@ export default function Lessons() {
                                         className="border-gray-300 border rounded-md p-2 block w-96 h-32 resize-vertical"
                                     />
                                 </div>
-                                <div>
-                                    <label>Status:</label>
-                                    <input type="radio" name="status" value="prepped" onChange={handleEditInputChange} checked={editingLesson.status === 'prepped'} /> Prepped
-                                    <input type="radio" name="status" value="completed" onChange={handleEditInputChange} checked={editingLesson.status === 'completed'} /> Completed
-                                    <input type="radio" name="status" value="neither" onChange={handleEditInputChange} checked={editingLesson.status === 'neither'} /> Neither
+                                <div className="mb-6 border-2 border-gray-200 rounded p-3">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Status:</label>
+                                    <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="prepped" onChange={handleEditInputChange} checked={editingLesson.status === 'prepped'} /> Prepped
+                                    <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="completed" onChange={handleEditInputChange} checked={editingLesson.status === 'completed'} /> Completed
+                                    <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="neither" onChange={handleEditInputChange} checked={editingLesson.status === 'neither'} /> Neither
                                 </div>
 
                                 <div className="flex justify-between mt-2">
