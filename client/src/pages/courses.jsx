@@ -314,7 +314,7 @@ export default function Courses() {
         setDeletingCourse(null);
     };
 
-    // Handle the deletion of the archived courses
+    // handle the deletion of the archived courses
     const handleConfirmDelete = async () => {
         try {
             const response = await fetch(`/api/delete/${deletingCourse.id}`, {
@@ -332,6 +332,7 @@ export default function Courses() {
             console.error('Error deleting course:', error);
         }
     };
+
 
     //---------------------RETRIEVE functions---------------------
     // Fetch the restored courses
