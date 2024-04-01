@@ -6,7 +6,7 @@ export default async function handler(request, response) {
     }
     // Extract the courseId from the query string and the fields from the request body
     const { courseId } = request.query;
-    const { unit_number, week, class_ID, learning_outcomes, enabling_outcomes, material, assessment, notes } = request.body;
+    const { unit_number, week, class_ID, learning_outcomes, enabling_outcomes, material, assessment, notes, status } = request.body;
 
     // establish a connection to the database
     try {
@@ -19,9 +19,9 @@ export default async function handler(request, response) {
 
         // Insert the new lesson into the database
         const [result] = await connection.execute(
-            `INSERT INTO tblLessons (course_id, unit_number, week, class_ID, learning_outcomes, enabling_outcomes, material, assessment, notes) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [courseId, unit_number, week, class_ID, learning_outcomes, enabling_outcomes, material, assessment, notes]
+            `INSERT INTO tblLessons (course_id, unit_number, week, class_ID, learning_outcomes, enabling_outcomes, material, assessment, notes, status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [courseId, unit_number, week, class_ID, learning_outcomes, enabling_outcomes, material, assessment, notes, status || 'neither']
         );
 
         await connection.end();
