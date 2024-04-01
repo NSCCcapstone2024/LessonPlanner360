@@ -355,34 +355,32 @@ export default function Courses() {
         }
     };
 
-    //---------------------COPY functions---------------------
     const handleCopyCourse = async (course) => {
         try {
-            console.log('Copying course:', course);
-
-            const response = await fetch(`/api/courses/copy/${course.id}`, {
+            const apiUrl = `/api/courses/copy/${course.id}`;
+            console.log("Fetching data from:", apiUrl);
+            const response = await fetch(apiUrl, {
                 method: 'POST',
             });
-
-            console.log('Response:', response);
 
             if (response.ok) {
                 const data = await response.json();
                 console.log(data);
                 console.log('Course copied successfully with ID:', data.newCourseId);
-                // Optionally, you can fetch the updated list of courses here
-                fetchCourses(); // Fetch all courses including the copied one
-                fetchArchivedCourses(); // Fetch archived courses
+
+                // Add the copied course to the main course list
+                setCourses(prevCourses => [...prevCourses, { ...course, id: data.newCourseId }]);
+
                 closeCopyConfirmation(); // Close the copy confirmation popup
             } else {
                 console.error('Failed to copy course');
+                const errorMessage = await response.text(); // Log the error message from the server
+                console.error('Server Error:', errorMessage);
             }
         } catch (error) {
             console.error('Error copying course:', error);
         }
     };
-
-
     // Function to open the confirmation popup
     const handleCopyConfirmation = (course) => {
         setCopyingCourse(course);
