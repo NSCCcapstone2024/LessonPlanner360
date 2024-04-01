@@ -420,7 +420,7 @@ export default function Lessons() {
             `}</style>
             <div className={`container mx-auto px-4 pt-8 ${theme === 'dark' ? 'dark' : ''}`}>
                 {/* Theme toggle button */}
-                <div className="absolute top-4 right-4">
+                <div style={{ marginBottom: '1rem' }}>
                     <button onClick={toggleTheme} className="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded-md text-gray-800 dark:text-gray-200 mt-3" style={{ backgroundColor: theme === 'dark' ? '#374151' : '#d1d5db', color: theme === 'dark' ? '#ffffff' : '#000000' }}>
                         {theme === 'light' ? 'Dark' : 'Light'} Theme
                     </button>
