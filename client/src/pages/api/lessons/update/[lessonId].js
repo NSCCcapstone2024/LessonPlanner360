@@ -15,9 +15,10 @@ export default async function handler(request, response) {
         class_ID,
         learning_outcomes,
         enabling_outcomes,
-        material,  // Assuming material is the field name for the file path
+        material,
         assessment,
-        notes
+        notes,
+        status
     } = request.body;
 
     try {
@@ -38,7 +39,8 @@ export default async function handler(request, response) {
                 enabling_outcomes = ?, 
                 material = ?, 
                 assessment = ?, 
-                notes = ? 
+                notes = ?, 
+                status = ? 
             WHERE id = ?`,
             [
                 unit_number,
@@ -46,10 +48,11 @@ export default async function handler(request, response) {
                 class_ID,
                 learning_outcomes,
                 enabling_outcomes,
-                material,  // Ensure this matches the column name in your database
+                material,
                 assessment,
                 notes,
-                lessonId  // This should match the lesson you intend to update
+                status || 'neither',
+                lessonId
             ]
         );
 
