@@ -16,6 +16,8 @@ export default function Courses() {
     const [isYearOpen, setIsYearOpen] = useState({});
     const [isArchivePopupOpen, setIsArchivePopupOpen] = useState(false);
     const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
+    const [isCopyConfirmationOpen, setIsCopyConfirmationOpen] = useState(false);
+    const [copyingCourse, setCopyingCourse] = useState(null);
 
     // Action states
     const [deletingCourse, setDeletingCourse] = useState(null);
@@ -356,22 +358,40 @@ export default function Courses() {
     //---------------------COPY functions---------------------
     const handleCopyCourse = async (course) => {
         try {
-            const response = await fetch(`/api/copy/${course.id}`, {
+            console.log('Copying course:', course);
+
+            const response = await fetch(`/api/courses/copy/${course.id}`, {
                 method: 'POST',
             });
 
+            console.log('Response:', response);
+
             if (response.ok) {
                 const data = await response.json();
+                console.log(data);
                 console.log('Course copied successfully with ID:', data.newCourseId);
                 // Optionally, you can fetch the updated list of courses here
-                fetchCourses();
-                fetchArchivedCourses();
+                fetchCourses(); // Fetch all courses including the copied one
+                fetchArchivedCourses(); // Fetch archived courses
+                closeCopyConfirmation(); // Close the copy confirmation popup
             } else {
                 console.error('Failed to copy course');
             }
         } catch (error) {
             console.error('Error copying course:', error);
         }
+    };
+
+
+    // Function to open the confirmation popup
+    const handleCopyConfirmation = (course) => {
+        setCopyingCourse(course);
+        setIsCopyConfirmationOpen(true);
+    };
+
+    // Function to close the confirmation popup
+    const closeCopyConfirmation = () => {
+        setIsCopyConfirmationOpen(false);
     };
 
 
@@ -385,7 +405,7 @@ export default function Courses() {
             `}</style>
             <div className={`container mx-auto px-4 pt-8`}>
                 {/* Theme toggles */}
-                <div className="absolute top-4 right-4">
+                <div style={{ marginBottom: '1rem' }}>
                     <button onClick={toggleTheme} className="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded-md text-gray-800 dark:text-gray-200 mt-3" style={{ backgroundColor: theme === 'dark' ? '#374151' : '#d1d5db', color: theme === 'dark' ? '#ffffff' : '#000000' }}>
                         {theme === 'light' ? 'Dark' : 'Light'} Theme
                     </button>
@@ -397,11 +417,10 @@ export default function Courses() {
                     <div>
                         <p className="text-2xl font-bold">Welcome {username}!</p>
                     </div>
-                    <div className="flex items-center">
-                        <div title="Add a new course" className="mr-10">
-                            <Icon icon="bx:bxs-plus-circle" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" onClick={handleAddCourse} />
-                        </div>
+                    <div style={{ marginBottom: '1rem' }} title="Add a new course">
+                        <Icon icon="bx:bxs-plus-circle" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" onClick={handleAddCourse} />
                     </div>
+
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -527,7 +546,7 @@ export default function Courses() {
                                     Retrieve
                                 </button>
                                 <button
-                                    onClick={() => handleCopyCourse(course)}
+                                    onClick={() => handleCopyConfirmation(course)}
                                     className={`px-4 py-2 rounded-md ${theme === 'dark' ? 'bg-blue-900 text-white' : 'bg-blue-400 text-white'}`}
                                 >
                                     Copy
@@ -536,6 +555,23 @@ export default function Courses() {
                         </div>
                     ))}
                 </div>
+
+                {
+                    isCopyConfirmationOpen && copyingCourse && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                            <div className="bg-white p-20 rounded-lg shadow-lg">
+                                <span className='text-black'>
+                                    <h2 className="text-xl font-bold mb-4">Copy Course</h2>
+                                    <p>Do you want to make a duplicate copy of {copyingCourse.course_name}?</p>
+                                    <div className="flex justify-between mt-4">
+                                        <button onClick={() => handleCopyCourse(copyingCourse)} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Yes</button>
+                                        <button onClick={closeCopyConfirmation} className="bg-gray-500 text-white px-4 py-2 rounded-md">No</button>
+                                    </div>
+                                </span>
+                            </div>
+                        </div>
+                    )
+                }
 
                 {isDeletePopupOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
