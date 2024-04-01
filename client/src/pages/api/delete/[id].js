@@ -7,6 +7,9 @@ export default async function handler(request, response) {
         method,
     } = request;
 
+    console.log('Received request with method:', method);
+    console.log('ID extracted from query string:', id);
+
     let connection;
     try {
         // Create a new connection
@@ -17,14 +20,21 @@ export default async function handler(request, response) {
             database: process.env.DB_NAME,
         });
 
+        console.log('Database connection established successfully');
+
         if (method === 'DELETE') {
             // Perform the deletion
+            console.log('Deleting course with ID:', id);
             const [result] = await connection.execute('DELETE FROM tblCourses WHERE id = ?', [id]);
+            console.log('Delete query executed, result:', result);
             if (result.affectedRows === 0) {
+                console.log('Course not found');
                 return response.status(404).json({ message: 'Course not found' });
             }
+            console.log('Course deleted successfully');
             return response.status(200).json({ message: 'Course deleted successfully' });
         } else {
+            console.log('Method not allowed:', method);
             response.setHeader('Allow', ['DELETE']);
             return response.status(405).end(`Method ${method} Not Allowed`);
         }
@@ -32,6 +42,9 @@ export default async function handler(request, response) {
         console.error('Error:', error);
         return response.status(500).json({ message: 'Error deleting course' });
     } finally {
-        if (connection) await connection.end();
+        if (connection) {
+            console.log('Closing database connection');
+            await connection.end();
+        }
     }
 }
