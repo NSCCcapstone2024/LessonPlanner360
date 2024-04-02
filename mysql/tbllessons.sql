@@ -30,7 +30,7 @@ CREATE TABLE `tblLessons` (
   `completion` TINYINT(1) DEFAULT 0,
   `status` ENUM('prepped', 'completed', 'neither') NOT NULL DEFAULT 'neither',
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`course_id`) REFERENCES `tblCourses`(`id`)
+  FOREIGN KEY (`course_id`) REFERENCES `tblCourses`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
