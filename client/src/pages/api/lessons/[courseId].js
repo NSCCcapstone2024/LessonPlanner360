@@ -15,9 +15,9 @@ export default async function handler(request, response) {
         if (request.method === 'GET') {
             // get the lessons by the courseID and organize by unit
             const [lessons] = await connection.execute(
-                `SELECT * FROM tblLessons 
-                 WHERE course_id = ? 
-                 ORDER BY unit_number ASC`,
+                `SELECT * FROM tblLessons
+                 WHERE course_id = ?
+                 ORDER BY unit_number ASC, week ASC, class_ID ASC`,
                 [courseId]
             );
 
