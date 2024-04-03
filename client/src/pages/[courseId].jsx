@@ -491,8 +491,8 @@ export default function Lessons() {
                 ))}
 
                 {isPopupOpen && (
-                    <div className={`fixed top-0 left-0 w-full h-full bg-${theme === 'dark' ? 'gray-900' : 'gray-300'} bg-opacity-50 flex justify-center items-center`}>
-                        <div className={`bg-${theme === 'dark' ? 'gray-900' : 'gray-300'} p-20 rounded-lg overflow-y-auto max-h-[90vh] ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                    <div className={`fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center`}>
+                        <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg overflow-y-auto max-h-[90vh] ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
                             <h2 className="text-xl font-bold mb-4">Add New Lesson</h2>
                             <div className="mb-6">
                                 <label htmlFor="unit_number" className="block text-sm font-medium mb-1">Unit Number</label>
@@ -518,27 +518,27 @@ export default function Lessons() {
                             </div>
                             <div className="mb-6">
                                 <label htmlFor="class_ID" className="block text-sm font-medium mb-1">class ID</label>
-                                <input type="text" id="class_ID" name="class_ID" value={newLesson.class_ID} onChange={handleInputChange} placeholder="Enter class ID" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={5} />
+                                <input type="text" id="class_ID" name="class_ID" value={newLesson.class_ID} onChange={handleInputChange} placeholder="Enter class ID" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" maxLength={5} />
                             </div>
                             <div className="mb-6">
                                 <label htmlFor="learning_outcomes" className="block text-sm font-medium mb-1">Learning Outcomes</label>
-                                <input type="text" id="learning_outcomes" name="learning_outcomes" value={newLesson.learning_outcomes} onChange={handleInputChange} placeholder="Enter Learning Outcomes" className="border-gray-300 border rounded-md p-2 block w-96" />
+                                <input type="text" id="learning_outcomes" name="learning_outcomes" value={newLesson.learning_outcomes} onChange={handleInputChange} placeholder="Enter Learning Outcomes" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
                             </div>
                             <div className="mb-6">
                                 <label htmlFor="enabling_outcomes" className="block text-sm font-medium mb-1">Enabling Outcomes</label>
-                                <input type="text" id="enabling_outcomes" name="enabling_outcomes" value={newLesson.enabling_outcomes} onChange={handleInputChange} placeholder="Enter Enabling Outcomes" className="border-gray-300 border rounded-md p-2 block w-96" />
+                                <input type="text" id="enabling_outcomes" name="enabling_outcomes" value={newLesson.enabling_outcomes} onChange={handleInputChange} placeholder="Enter Enabling Outcomes" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
                             </div>
                             <div className="mb-6">
                                 <label htmlFor="material" className="block text-sm font-medium mb-1">Material</label>
-                                <input type="file" id="material" name="material" onChange={handleFileChange} className="border-gray-300 border rounded-md p-2 block w-full" />
+                                <input type="file" id="material" name="material" onChange={handleFileChange} className="border-gray-300 text-gray-900border rounded-md p-2 block w-full" />
                             </div>
                             <div className="mb-6">
                                 <label htmlFor="assessment" className="block text-sm font-medium mb-1">Assessment</label>
-                                <input type="text" id="assessment" name="assessment" value={newLesson.assessment} onChange={handleInputChange} placeholder="Enter Assessment" className="border-gray-300 border rounded-md p-2 block w-96" />
+                                <input type="text" id="assessment" name="assessment" value={newLesson.assessment} onChange={handleInputChange} placeholder="Enter Assessment" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
                             </div>
                             <div className="mb-6">
                                 <label htmlFor="notes" className="block text-sm font-medium mb-1">Notes</label>
-                                <textarea id="notes" name="notes" value={newLesson.notes} onChange={handleInputChange} placeholder="Enter Notes" className="border-gray-300 border rounded-md p-2 block w-96 h-32 resize-vertical" />
+                                <textarea id="notes" name="notes" value={newLesson.notes} onChange={handleInputChange} placeholder="Enter Notes" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96 h-32 resize-vertical" />
                             </div>
                             <div className="mb-6 border-2 border-gray-200 rounded p-3">
                                 <label className="block text-sm font-medium mb-1">Status:</label>
@@ -557,8 +557,8 @@ export default function Lessons() {
                 )
                 }
                 {isEditPopupOpen && editingLesson && (
-                    <div className={`fixed top-0 left-0 w-full h-full bg-${theme === 'dark' ? 'gray-900' : 'gray-300'} bg-opacity-50 flex justify-center items-center`}>
-                        <div className={`bg-${theme === 'dark' ? 'gray-900' : 'gray-300'} p-20 rounded-lg overflow-y-auto max-h-[90vh] ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                    <div className={`fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center`}>
+                        <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg overflow-y-auto max-h-[90vh] ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
                             <h2 className="text-xl font-bold mb-4">Edit Lesson</h2>
                             <div className="mb-6">
                                 <label htmlFor="unit_number" className="block text-sm font-medium mb-1">Unit Number</label>
@@ -664,8 +664,8 @@ export default function Lessons() {
                 )}
 
                 {isDeletePopupOpen && (
-                    <div className={`fixed inset-0 bg-${theme === 'dark' ? 'gray-900' : 'gray-300'} bg-opacity-50 flex justify-center items-center`}>
-                        <div className={`bg-${theme === 'dark' ? 'gray-900' : 'gray-300'} p-20 rounded-lg shadow-lg ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                    <div className={`fixed inset-0 bg-opacity-50 flex justify-center items-center`}>
+                        <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg shadow-lg ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
                             <h2 className="text-xl font-bold mb-4">Delete Lesson</h2>
                             <p className='text-lg'>Are you sure you want to delete this lesson: {deletingLesson?.class_ID}?</p>
                             <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!</p>
