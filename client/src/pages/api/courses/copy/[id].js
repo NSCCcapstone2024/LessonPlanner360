@@ -1,26 +1,23 @@
 import mysql from 'mysql2/promise';
 
 export default async function handler(request, response) {
-    console.log('API Endpoint Reached'); // Log when the API endpoint is reached
+    console.log('API Endpoint Reached');
 
     if (request.method !== 'POST') {
-        console.log('Method Not Allowed'); // Log when the request method is not allowed
+        console.log('Method Not Allowed');
         return response.status(405).json({ message: 'Method Not Allowed' });
     }
 
-    // get the id from the query
     const { id } = request.query;
-    console.log('Received id:', id); // Log the received id parameter
+    console.log('Received id:', id);
 
-    // Check if the id parameter is present in the request body or URL
     if (!id) {
-        console.log('ID parameter is missing'); // Log if the id parameter is missing
+        console.log('ID parameter is missing');
         return response.status(400).json({ message: 'ID parameter is missing' });
     }
 
     let connection;
     try {
-        // establish a connection
         console.log('Establishing database connection...');
         connection = await mysql.createConnection({
             host: process.env.DB_HOST,
@@ -30,43 +27,65 @@ export default async function handler(request, response) {
         });
         console.log('Database connection established successfully!');
 
-        // retrieve the course from the database
-        const sql = 'SELECT * FROM tblCourses WHERE id = ?';
-        console.log('Executing SQL query:', sql, 'with id:', id);
-        const [rows] = await connection.execute(sql, [id]); // <-- Ensure that the id is passed as an array
-        console.log('SQL query executed successfully!');
+        // Retrieve the original course and its associated lessons from the database
+        const [courseRows] = await connection.execute('SELECT * FROM tblCourses WHERE id = ?', [id]);
+        const [lessonRows] = await connection.execute('SELECT * FROM tblLessons WHERE course_id = ?', [id]);
 
-
-        // check if the course exists
-        if (rows.length === 0) {
-            console.log('Course not found'); // Log if the course is not found
+        if (courseRows.length === 0) {
+            console.log('Course not found');
             return response.status(404).json({ message: 'Course not found' });
         }
 
-        // get the course details
-        const course = rows[0];
-        console.log('Found course:', course); // Log the found course details
+        const originalCourse = courseRows[0];
+        const originalLessons = lessonRows;
 
-        // copy the course with a new ID
-        const copiedCourse = { ...course };
-        delete copiedCourse.id; // Remove the original ID to ensure a new ID is assigned upon insertion
+        console.log('Original Course:', originalCourse);
+        console.log('Original Lessons:', originalLessons);
 
-        // insert the copied course into the database
-        const insertSql = 'INSERT INTO tblCourses (course_code, course_name, year, archived) VALUES (?, ?, ?, ?)';
-        console.log('Executing SQL query:', insertSql, 'with data:', [copiedCourse.course_code, copiedCourse.course_name, copiedCourse.year, copiedCourse.archived]);
-
+        // Copy the course
+        const copiedCourse = { ...originalCourse };
+        delete copiedCourse.id;
         copiedCourse.archived = false;
 
-        const [result] = await connection.execute(insertSql, [copiedCourse.course_code, copiedCourse.course_name, copiedCourse.year, copiedCourse.archived]);
-        console.log('Course copied successfully!');
+        const [insertResult] = await connection.execute(
+            'INSERT INTO tblCourses (course_code, course_name, year, archived) VALUES (?, ?, ?, ?)',
+            [copiedCourse.course_code, copiedCourse.course_name, copiedCourse.year, copiedCourse.archived]
+        );
 
-        // send a success response if copying the course is successful
-        response.status(200).json({ message: 'Course copied successfully', newCourseId: result.insertId });
+        console.log('Course copied successfully!');
+        const newCourseId = insertResult.insertId;
+
+        // Copy lessons associated with the original course to the new course
+        for (const lesson of originalLessons) {
+            delete lesson.id; // Remove the original lesson ID to ensure a new ID is assigned upon insertion
+            lesson.course_id = newCourseId; // Update the course_id to the ID of the copied course
+
+            await connection.execute(
+                'INSERT INTO tblLessons (course_id, unit_number, week, class_ID, learning_outcomes, enabling_outcomes, material, assessment, notes, completion, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [
+                    lesson.course_id,
+                    lesson.unit_number,
+                    lesson.week,
+                    lesson.class_ID,
+                    lesson.learning_outcomes,
+                    lesson.enabling_outcomes,
+                    lesson.material,
+                    lesson.assessment,
+                    lesson.notes,
+                    lesson.completion,
+                    lesson.status
+                ]
+            );
+        }
+
+        // Retrieve lessons associated with the copied course
+        const [copiedLessonRows] = await connection.execute('SELECT * FROM tblLessons WHERE course_id = ?', [newCourseId]);
+
+        response.status(200).json({ message: 'Course copied successfully', newCourseId, lessons: copiedLessonRows });
     } catch (error) {
         console.error('Error copying course:', error);
         response.status(500).json({ message: 'Error copying course', error: error.message });
     } finally {
-        // close connection
         if (connection) {
             try {
                 await connection.end();
