@@ -171,19 +171,13 @@ export default function Lessons() {
         }));
     };
 
-    // dynamically change background colour of each unit
-    // const getBackgroundColor = (unitNumber) => {
-    //     const colors = ["bg-slate-300", "bg-red-300", "bg-blue-300", "bg-blue-400"];
-    //     return colors[unitNumber % colors.length];
-    // };
-
     // dynamically change background colour of each unit based on theme
     const getBackgroundColor = (unitNumber) => {
         if (theme === 'dark') {
-            const darkColors = ["bg-gray-600", "bg-red-900", "bg-blue-600", "bg-green-600", "bg-yellow-600", "bg-indigo-600", "bg-pink-600", "bg-purple-600", "bg-cyan-600", "bg-rose-600"];
+            const darkColors = ["bg-gray-600", "bg-pink-600", "bg-blue-600", "bg-green-600", "bg-yellow-600", "bg-indigo-600", "bg-red-600", "bg-purple-600", "bg-cyan-600", "bg-rose-600"];
             return darkColors[unitNumber % darkColors.length];
         } else {
-            const lightColors = ["bg-slate-300", "bg-red-300", "bg-blue-300", "bg-green-300", "bg-yellow-300", "bg-indigo-300", "bg-pink-300", "bg-purple-300", "bg-cyan-300", "bg-rose-300"];
+            const lightColors = ["bg-slate-300", "bg-pink-300", "bg-blue-300", "bg-green-300", "bg-yellow-300", "bg-indigo-300", "bg-red-300", "bg-purple-300", "bg-cyan-300", "bg-rose-300"];
             return lightColors[unitNumber % lightColors.length];
         }
     };
@@ -330,9 +324,6 @@ export default function Lessons() {
         }
     };
 
-
-
-
     // ------------------ ADDING LESSONS --------------------
 
     // open the popup when the add lesson icon is clicked
@@ -451,119 +442,126 @@ export default function Lessons() {
                         {isUnitOpen[unit] && (
                             <div className="mt-2">
                                 {lessons[unit].map((lesson) => (
-                                    <div key={lesson.id} className={`${getBackgroundColor(index)} p-2 rounded-lg mb-2 relative`}> <span className={`status-label ${lesson.status === 'prepped' ? 'bg-green-500' : lesson.status === 'completed' ? 'bg-yellow-500' : 'bg-red-700'} text-white px-2 py-1 rounded`}>
-                                        {lesson.status}
-                                    </span>
-
+                                    <div key={lesson.id} className={`${getBackgroundColor(index)} p-2 rounded-lg mb-2 relative`}>
+                                        <span className={`status-label ${theme === 'dark'
+                                            ? lesson.status === 'prepped' ? 'bg-green-700' : lesson.status === 'completed' ? 'bg-yellow-700' : 'bg-blue-800'
+                                            : lesson.status === 'prepped' ? 'bg-green-400' : lesson.status === 'completed' ? 'bg-yellow-400' : 'bg-blue-500'
+                                            } text-white px-2 py-1 rounded`}>
+                                            {lesson.status}
+                                        </span>
                                         <div className="flex justify-end space-x-2 absolute top-0 right-0 p-2">
                                             <div title='Edit Lesson' onClick={() => handleEditLesson(lesson)} className="cursor-pointer">
                                                 <Icon icon="ci:edit-pencil-line-01" width="24" height="24" />
                                             </div>
-
-                                            <div title='Delete Lesson' onClick={() => handleDeleteConfirmation(lesson)} className="cursor-pointer">
-                                                <Icon icon="solar:trash-bin-trash-linear" width="24" height="24" className="text-red-500" />
+                                            <div
+                                                title="Delete Lesson"
+                                                onClick={() => handleDeleteConfirmation(lesson)}
+                                                className="cursor-pointer"
+                                                style={{ color: theme === 'dark' ? 'white' : 'red' }}
+                                            >
+                                                <Icon icon="solar:trash-bin-trash-linear" width="24" height="24" />
                                             </div>
                                         </div>
-                                        <span className='text-black'>
-                                            <p><strong>Week:</strong> {lesson.week}</p>
-                                            <p><strong>Class ID:</strong> {lesson.class_ID}</p>
-                                            <p><strong>Learning Outcomes:</strong> {lesson.learning_outcomes}</p>
-                                            <p><strong>Enabling Outcomes:</strong> {lesson.enabling_outcomes}</p>
-                                            <p>
-                                                <strong>Material:</strong>
-                                                {lesson.material ? (
-                                                    <span>
-                                                        <a href={lesson.material} target="_blank" rel="noreferrer">
-                                                            Download ({lesson.material.split('/').pop()})
-                                                        </a>
-                                                        <button onClick={() => handleDeleteFile(lesson)} title="Delete File">
-                                                            <Icon icon="typcn:delete" className="text-red-500 cursor-pointer" />
-                                                        </button>
-                                                    </span>
-                                                ) : 'No material uploaded'}
-                                            </p>
-                                            <p><strong>Assessment:</strong> {lesson.assessment}</p>
-                                            <p><strong>Notes:</strong> {lesson.notes}</p>
-                                        </span>
+                                        <p><strong>Week:</strong> {lesson.week}</p>
+                                        <p><strong>Class ID:</strong> {lesson.class_ID}</p>
+                                        <p><strong>Learning Outcomes:</strong> {lesson.learning_outcomes}</p>
+                                        <p><strong>Enabling Outcomes:</strong> {lesson.enabling_outcomes}</p>
+                                        <p>
+                                            <strong>Material:</strong>
+                                            {lesson.material ? (
+                                                <span>
+                                                    <a href={lesson.material} target="_blank" rel="noreferrer">
+                                                        Download ({lesson.material.split('/').pop()})
+                                                    </a>
+                                                    <button onClick={() => handleDeleteFile(lesson)} title="Delete File">
+                                                        <Icon icon="typcn:delete" className="text-red-500 cursor-pointer" />
+                                                    </button>
+                                                </span>
+                                            ) : 'No material uploaded'}
+                                        </p>
+                                        <p><strong>Assessment:</strong> {lesson.assessment}</p>
+                                        <p><strong>Notes:</strong> {lesson.notes}</p>
                                     </div>
                                 ))}
                             </div>
+
                         )}
                     </div>
                 ))}
 
                 {isPopupOpen && (
-                    <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                        <div className="bg-gray-300 p-20 rounded-lg overflow-y-auto max-h-[90vh]">
-                            <span className='text-black'>
-                                <h2 className="text-xl font-bold mb-4">Add New Lesson</h2>
-
-                                <div className="mb-6">
-                                    <label htmlFor="unit_number" className="block text-sm font-medium text-gray-700 mb-1">Unit Number</label>
+                    <div className={`fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center`}>
+                        <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg overflow-y-auto max-h-[90vh] ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                            <h2 className="text-xl font-bold mb-4">Add New Lesson</h2>
+                            <div className="mb-6">
+                                <label htmlFor="unit_number" className="block text-sm font-medium mb-1">Unit Number</label>
+                                <span className='text-black'>
                                     <select id="unit_number" name="unit_number" value={newLesson.unit_number} onChange={handleInputChange} className="border-gray-300 border rounded-md p-2 block w-1/4">
                                         <option value="" disabled>Select</option>
                                         {[...Array(10)].map((_, i) => (
                                             <option key={i} value={i + 1}>{i + 1}</option>
                                         ))}
                                     </select>
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="week" className="block text-sm font-medium text-gray-700 mb-1">Week</label>
+                                </span>
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="week" className="block text-sm font-medium mb-1">Week</label>
+                                <span className='text-black'>
                                     <select id="week" name="week" value={newLesson.week} onChange={handleInputChange} className="border-gray-300 border rounded-md p-2 block w-1/4">
                                         <option value="" disabled>Select</option>
                                         {[...Array(52)].map((_, i) => (
                                             <option key={i} value={i + 1}>{i + 1}</option>
                                         ))}
                                     </select>
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="class_ID" className="block text-sm font-medium text-gray-700 mb-1">class ID</label>
-                                    <input type="text" id="class_ID" name="class_ID" value={newLesson.class_ID} onChange={handleInputChange} placeholder="Enter class ID" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={5} />
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="learning_outcomes" className="block text-sm font-medium text-gray-700 mb-1">Learning Outcomes</label>
-                                    <input type="text" id="learning_outcomes" name="learning_outcomes" value={newLesson.learning_outcomes} onChange={handleInputChange} placeholder="Enter Learning Outcomes" className="border-gray-300 border rounded-md p-2 block w-96" />
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="enabling_outcomes" className="block text-sm font-medium text-gray-700 mb-1">Enabling Outcomes</label>
-                                    <input type="text" id="enabling_outcomes" name="enabling_outcomes" value={newLesson.enabling_outcomes} onChange={handleInputChange} placeholder="Enter Enabling Outcomes" className="border-gray-300 border rounded-md p-2 block w-96" />
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="material" className="block text-sm font-medium text-gray-700 mb-1">Material</label>
-                                    <input type="file" id="material" name="material" onChange={handleFileChange} className="border-gray-300 border rounded-md p-2 block w-full" />
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="assessment" className="block text-sm font-medium text-gray-700 mb-1">Assessment</label>
-                                    <input type="text" id="assessment" name="assessment" value={newLesson.assessment} onChange={handleInputChange} placeholder="Enter Assessment" className="border-gray-300 border rounded-md p-2 block w-96" />
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                                    <textarea id="notes" name="notes" value={newLesson.notes} onChange={handleInputChange} placeholder="Enter Notes" className="border-gray-300 border rounded-md p-2 block w-96 h-32 resize-vertical" />
-                                </div>
-                                <div className="mb-6 border-2 border-gray-200 rounded p-3">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Status:</label>
-                                    <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="prepped" onChange={handleInputChange} checked={newLesson.status === 'prepped'} /> Prepped
-                                    <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="completed" onChange={handleInputChange} checked={newLesson.status === 'completed'} /> Completed
-                                    <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="neither" onChange={handleInputChange} checked={newLesson.status === 'neither'} /> Neither
-                                </div>
-                                <div className="flex justify-between">
-                                    <button onClick={handleAddNewLesson} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Add Lesson</button>
-                                    <button onClick={closePopupAndResetForm} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-                                </div>
+                                </span>
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="class_ID" className="block text-sm font-medium mb-1">class ID</label>
+                                <input type="text" id="class_ID" name="class_ID" value={newLesson.class_ID} onChange={handleInputChange} placeholder="Enter class ID" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" maxLength={5} />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="learning_outcomes" className="block text-sm font-medium mb-1">Learning Outcomes</label>
+                                <input type="text" id="learning_outcomes" name="learning_outcomes" value={newLesson.learning_outcomes} onChange={handleInputChange} placeholder="Enter Learning Outcomes" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="enabling_outcomes" className="block text-sm font-medium mb-1">Enabling Outcomes</label>
+                                <input type="text" id="enabling_outcomes" name="enabling_outcomes" value={newLesson.enabling_outcomes} onChange={handleInputChange} placeholder="Enter Enabling Outcomes" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="material" className="block text-sm font-medium mb-1">Material</label>
+                                <input type="file" id="material" name="material" onChange={handleFileChange} className="border-gray-300 text-gray-900border rounded-md p-2 block w-full" />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="assessment" className="block text-sm font-medium mb-1">Assessment</label>
+                                <input type="text" id="assessment" name="assessment" value={newLesson.assessment} onChange={handleInputChange} placeholder="Enter Assessment" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="notes" className="block text-sm font-medium mb-1">Notes</label>
+                                <textarea id="notes" name="notes" value={newLesson.notes} onChange={handleInputChange} placeholder="Enter Notes" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96 h-32 resize-vertical" />
+                            </div>
+                            <div className="mb-6 border-2 border-gray-200 rounded p-3">
+                                <label className="block text-sm font-medium mb-1">Status:</label>
+                                <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="prepped" onChange={handleInputChange} checked={newLesson.status === 'prepped'} /> Prepped
+                                <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="completed" onChange={handleInputChange} checked={newLesson.status === 'completed'} /> Completed
+                                <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="neither" onChange={handleInputChange} checked={newLesson.status === 'neither'} /> Neither
+                            </div>
+                            <div className="flex justify-between">
+                                <button onClick={handleAddNewLesson} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Add Lesson</button>
+                                <button onClick={closePopupAndResetForm} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                            </div>
 
-                                {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
-                            </span>
+                            {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
                         </div>
                     </div>
                 )
                 }
                 {isEditPopupOpen && editingLesson && (
-                    <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                        <div className="bg-gray-300 p-20 rounded-lg overflow-y-auto max-h-[90vh]">
-                            <span className='text-black'>
-                                <h2 className="text-xl font-bold mb-4">Edit Lesson</h2>
-                                <div className="mb-6">
-                                    <label htmlFor="unit_number" className="block text-sm font-medium text-gray-700 mb-1">Unit Number</label>
+                    <div className={`fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center`}>
+                        <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg overflow-y-auto max-h-[90vh] ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                            <h2 className="text-xl font-bold mb-4">Edit Lesson</h2>
+                            <div className="mb-6">
+                                <label htmlFor="unit_number" className="block text-sm font-medium mb-1">Unit Number</label>
+                                <span className='text-black'>
                                     <select
                                         name="unit_number"
                                         value={editingLesson.unit_number}
@@ -574,9 +572,11 @@ export default function Lessons() {
                                             <option key={i} value={i + 1}>{i + 1}</option>
                                         ))}
                                     </select>
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="week" className="block text-sm font-medium text-gray-700 mb-1">Week</label>
+                                </span>
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="week" className="block text-sm font-medium mb-1">Week</label>
+                                <span className='text-black'>
                                     <select
                                         name="week"
                                         value={editingLesson.week}
@@ -587,99 +587,97 @@ export default function Lessons() {
                                             <option key={i} value={i + 1}>{i + 1}</option>
                                         ))}
                                     </select>
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="class_ID" className="block text-sm font-medium text-gray-700 mb-1">class ID</label>
-                                    <input
-                                        type="text"
-                                        name="class_ID"
-                                        value={editingLesson.class_ID}
-                                        onChange={handleEditInputChange}
-                                        className="border-gray-300 border rounded-md p-2 block w-full"
-                                    />
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="learning_outcomes" className="block text-sm font-medium text-gray-700 mb-1">Learning Outcomes</label>
-                                    <input
-                                        type="text"
-                                        name="learning_outcomes"
-                                        value={editingLesson.learning_outcomes}
-                                        onChange={handleEditInputChange}
-                                        className="border-gray-300 border rounded-md p-2 block w-96"
-                                    />
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="enabling_outcomes" className="block text-sm font-medium text-gray-700 mb-1">Enabling Outcomes</label>
-                                    <input
-                                        type="text"
-                                        name="enabling_outcomes"
-                                        value={editingLesson.enabling_outcomes}
-                                        onChange={handleEditInputChange}
-                                        className="border-gray-300 border rounded-md p-2 block w-96"
-                                    />
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="material" className="block text-sm font-medium text-gray-700 mb-1">Material</label>
-                                    <input
-                                        type="file"
-                                        name="material"
-                                        onChange={handleFileChange}
-                                        className="border-gray-300 border rounded-md p-2 block w-full"
-                                    />
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="assessment" className="block text-sm font-medium text-gray-700 mb-1">Assessment</label>
-                                    <input
-                                        type="text"
-                                        name="assessment"
-                                        value={editingLesson.assessment}
-                                        onChange={handleEditInputChange}
-                                        className="border-gray-300 border rounded-md p-2 block w-96"
-                                    />
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                                    <textarea
-                                        name="notes"
-                                        value={editingLesson.notes}
-                                        onChange={handleEditInputChange}
-                                        className="border-gray-300 border rounded-md p-2 block w-96 h-32 resize-vertical"
-                                    />
-                                </div>
-                                <div className="mb-6 border-2 border-gray-200 rounded p-3">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Status:</label>
-                                    <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="prepped" onChange={handleEditInputChange} checked={editingLesson.status === 'prepped'} /> Prepped
-                                    <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="completed" onChange={handleEditInputChange} checked={editingLesson.status === 'completed'} /> Completed
-                                    <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="neither" onChange={handleEditInputChange} checked={editingLesson.status === 'neither'} /> Neither
-                                </div>
+                                </span>
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="class_ID" className="block text-sm font-medium  mb-1">class ID</label>
+                                <input
+                                    type="text"
+                                    name="class_ID"
+                                    value={editingLesson.class_ID}
+                                    onChange={handleEditInputChange}
+                                    className="border-gray-300 text-gray-900 border rounded-md p-2 block w-full"
+                                />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="learning_outcomes" className="block text-sm font-medium mb-1">Learning Outcomes</label>
+                                <input
+                                    type="text"
+                                    name="learning_outcomes"
+                                    value={editingLesson.learning_outcomes}
+                                    onChange={handleEditInputChange}
+                                    className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96"
+                                />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="enabling_outcomes" className="block text-sm font-medium mb-1">Enabling Outcomes</label>
+                                <input
+                                    type="text"
+                                    name="enabling_outcomes"
+                                    value={editingLesson.enabling_outcomes}
+                                    onChange={handleEditInputChange}
+                                    className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96"
+                                />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="material" className="block text-sm font-medium mb-1">Material</label>
+                                <input
+                                    type="file"
+                                    name="material"
+                                    onChange={handleFileChange}
+                                    className="border-gray-300 text-gray-900 border rounded-md p-2 block w-full"
+                                />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="assessment" className="block text-sm font-medium mb-1">Assessment</label>
+                                <input
+                                    type="text"
+                                    name="assessment"
+                                    value={editingLesson.assessment}
+                                    onChange={handleEditInputChange}
+                                    className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96"
+                                />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="notes" className="block text-sm font-medium mb-1">Notes</label>
+                                <textarea
+                                    name="notes"
+                                    value={editingLesson.notes}
+                                    onChange={handleEditInputChange}
+                                    className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96 h-32 resize-vertical"
+                                />
+                            </div>
+                            <div className="mb-6 border-2 border-gray-200 rounded p-3">
+                                <label className="block text-sm font-medium mb-1">Status:</label>
+                                <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="prepped" onChange={handleEditInputChange} checked={editingLesson.status === 'prepped'} /> Prepped
+                                <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="completed" onChange={handleEditInputChange} checked={editingLesson.status === 'completed'} /> Completed
+                                <input className="m-2 focus:ring-blue-500 focus:ring-2" type="radio" name="status" value="neither" onChange={handleEditInputChange} checked={editingLesson.status === 'neither'} /> Neither
+                            </div>
 
-                                <div className="flex justify-between mt-2">
-                                    <button onClick={handleUpdateLesson} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Update Lesson</button>
-                                    <button onClick={() => setIsEditPopupOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-                                </div>
-                            </span>
+                            <div className="flex justify-between mt-2">
+                                <button onClick={handleUpdateLesson} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Update Lesson</button>
+                                <button onClick={() => setIsEditPopupOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                            </div>
                         </div>
                     </div>
                 )}
 
                 {isDeletePopupOpen && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                        <div className="bg-gray-300 p-20 rounded-lg shadow-lg">
-                            <span className='text-black'>
-                                <h2 className="text-xl font-bold mb-4">Delete Lesson</h2>
-                                <p className='text-lg'>Are you sure you want to delete this lesson: {deletingLesson?.class_ID}?</p>
-                                <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!</p>
-                                {errorMessage && <div className="text-center text-md text-red-500 mb-4">{errorMessage}</div>}
-                                <div className="flex justify-between">
-                                    <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
-                                    <button onClick={() => setIsDeletePopupOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-                                </div>
-                            </span>
+                    <div className={`fixed inset-0 bg-opacity-50 flex justify-center items-center`}>
+                        <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg shadow-lg ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                            <h2 className="text-xl font-bold mb-4">Delete Lesson</h2>
+                            <p className='text-lg'>Are you sure you want to delete this lesson: {deletingLesson?.class_ID}?</p>
+                            <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!</p>
+                            {errorMessage && <div className="text-center text-md text-red-500 mb-4">{errorMessage}</div>}
+                            <div className="flex justify-between">
+                                <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
+                                <button onClick={() => setIsDeletePopupOpen(false)} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                            </div>
                         </div>
                     </div>
                 )}
 
-            </div>
+            </div >
 
         </>
     );

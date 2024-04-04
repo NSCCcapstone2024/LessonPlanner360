@@ -440,20 +440,20 @@ export default function Courses() {
                 </div>
                 {
                     isPopupOpen && (
-                        <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                            <div className="bg-gray-300 p-20 rounded-lg">
-                                <h2 className="text-xl font-bold mb-4"><span className="text-black">Add New Course</span></h2>
+                        <div className="fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center">
+                            <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                                <h2 className="text-xl font-bold mb-4">Add New Course</h2>
                                 <div className="mb-6">
-                                    <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">Year</label>
-                                    <input type="text" id="year" name="year" value={newCourse.year} onChange={handleInputChange} placeholder="Enter year" className="border-gray-300 border rounded-md p-2 block w-96 " maxLength={4} />
+                                    <label htmlFor="year" className="block text-sm font-medium mb-1">Year</label>
+                                    <input type="text" id="year" name="year" value={newCourse.year} onChange={handleInputChange} placeholder="Enter year" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96 " maxLength={4} />
                                 </div>
                                 <div className="mb-6">
-                                    <label htmlFor="course_code" className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
-                                    <input type="text" id="course_code" name="course_code" value={newCourse.course_code} onChange={handleInputChange} placeholder="Enter course code" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
+                                    <label htmlFor="course_code" className="block text-sm font-medium mb-1">Course Code</label>
+                                    <input type="text" id="course_code" name="course_code" value={newCourse.course_code} onChange={handleInputChange} placeholder="Enter course code" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" maxLength={200} />
                                 </div>
                                 <div className="mb-6">
-                                    <label htmlFor="course_name" className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
-                                    <input type="text" id="course_name" name="course_name" value={newCourse.course_name} onChange={handleInputChange} placeholder="Enter course name" className="border-gray-300 border rounded-md p-2 block w-96" maxLength={200} />
+                                    <label htmlFor="course_name" className="block text-sm font-medium mb-1">Course Name</label>
+                                    <input type="text" id="course_name" name="course_name" value={newCourse.course_name} onChange={handleInputChange} placeholder="Enter course name" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" maxLength={200} />
                                 </div>
                                 <div className="flex justify-between">
                                     <button onClick={handleAddNewCourse} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Add Course</button>
@@ -466,20 +466,20 @@ export default function Courses() {
                 }
                 {
                     isEditPopupOpen && editingCourse && (
-                        <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                            <div className="bg-gray-300 p-20 rounded-lg">
-                                <h2 className="text-xl font-bold mb-4"><span className="text-black">Edit Course</span></h2>
+                        <div className="fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center">
+                            <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                                <h2 className="text-xl font-bold mb-4">Edit Course</h2>
                                 <div className="mb-6">
-                                    <label htmlFor="editYear" className="block text-sm font-medium text-gray-700 mb-1">Year:</label>
-                                    <span className="text-black"><input type="text" id="editYear" name="year" value={editingCourse.year || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" /></span>
+                                    <label htmlFor="editYear" className="block text-sm font-medium mb-1">Year:</label>
+                                    <input type="text" id="editYear" name="year" value={editingCourse.year || ''} onChange={handleEditInputChange} className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
                                 </div>
                                 <div className="mb-6">
-                                    <label htmlFor="editcourse_code" className="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
-                                    <span className="text-black"><input type="text" id="editcourse_code" name="course_code" value={editingCourse.course_code || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" /></span>
+                                    <label htmlFor="editcourse_code" className="block text-sm font-medium mb-1">Course Code</label>
+                                    <input type="text" id="editcourse_code" name="course_code" value={editingCourse.course_code || ''} onChange={handleEditInputChange} className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
                                 </div>
                                 <div className="mb-6">
-                                    <label htmlFor="editcourse_name" className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
-                                    <span className="text-black"><input type="text" id="editcourse_name" name="course_name" value={editingCourse.course_name || ''} onChange={handleEditInputChange} className="border-gray-300 border rounded-md p-2 block w-96" /></span>
+                                    <label htmlFor="editcourse_name" className="block text-sm font-medium mb-1">Course Name</label>
+                                    <input type="text" id="editcourse_name" name="course_name" value={editingCourse.course_name || ''} onChange={handleEditInputChange} className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
                                 </div>
                                 <div className="flex justify-between">
                                     <button onClick={handleUpdateCourse} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Update Course</button>
@@ -492,10 +492,10 @@ export default function Courses() {
                 }
                 {
                     isArchivePopupOpen && archivingCourse && (
-                        <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                            <div className="bg-gray-300 p-20 rounded-lg">
-                                <h2 className="text-xl font-bold mb-4"><span className="text-black">Archive Course</span></h2>
-                                <p className="text-black">Are you sure you want to archive {archivingCourse.course_code} - {archivingCourse.year}?</p>
+                        <div className="fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center">
+                            <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                                <h2 className="text-xl font-bold mb-4">Archive Course</h2>
+                                <p>Are you sure you want to archive {archivingCourse.course_code} - {archivingCourse.year}?</p>
                                 <div className="flex justify-between mt-4">
                                     <button onClick={handleConfirmArchive} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes</button>
                                     <button onClick={handleCancelArchive} className="bg-gray-500 text-white px-4 py-2 rounded-md">No</button>
@@ -541,15 +541,13 @@ export default function Courses() {
                 {
                     isCopyConfirmationOpen && copyingCourse && (
                         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                            <div className="bg-white p-20 rounded-lg shadow-lg">
-                                <span className='text-black'>
-                                    <h2 className="text-xl font-bold mb-4">Copy Course</h2>
-                                    <p>Do you want to make a duplicate copy of {copyingCourse.course_name}?</p>
-                                    <div className="flex justify-between mt-4">
-                                        <button onClick={() => handleCopyCourse(copyingCourse)} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Yes</button>
-                                        <button onClick={closeCopyConfirmation} className="bg-gray-500 text-white px-4 py-2 rounded-md">No</button>
-                                    </div>
-                                </span>
+                            <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg shadow-lg${theme === 'dark' ? 'bg-gray-800' : ''}`}>
+                                <h2 className="text-xl font-bold mb-4">Copy Course</h2>
+                                <p>Do you want to make a duplicate copy of {copyingCourse.course_name}?</p>
+                                <div className="flex justify-between mt-4">
+                                    <button onClick={() => handleCopyCourse(copyingCourse)} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Yes</button>
+                                    <button onClick={closeCopyConfirmation} className="bg-gray-500 text-white px-4 py-2 rounded-md">No</button>
+                                </div>
                             </div>
                         </div>
                     )
@@ -557,11 +555,9 @@ export default function Courses() {
 
                 {isDeletePopupOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                        <div className="bg-white p-20 rounded-lg shadow-lg ">
-                            <span className="text-black">
-                                <h2 className="text-xl font-bold mb-4">Delete Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
-                                <p className='text-lg'>Are you sure you want to delete this course and all of its contents: {deletingCourse?.course_name}?</p>
-                            </span>
+                        <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg shadow-lg${theme === 'dark' ? 'bg-gray-800' : ''}`}>
+                            <h2 className="text-xl font-bold mb-4">Delete Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
+                            <p className='text-lg'>Are you sure you want to delete this course and all of its contents: {deletingCourse?.course_name}?</p>
                             <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!!</p>
                             <div className="flex justify-between mt-4">
                                 <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
@@ -570,7 +566,7 @@ export default function Courses() {
                         </div>
                     </div>
                 )}
-            </div>
+            </div >
         </>
     );
 }
