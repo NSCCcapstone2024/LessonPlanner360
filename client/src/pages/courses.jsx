@@ -70,19 +70,6 @@ export default function Courses() {
         }
     }, [session]);
 
-    // Check if the course code is unique
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (courseCode.trim() !== '') {
-                fetch(`/api/courses?course_code=${encodeURIComponent(courseCode)}`)
-                    .then(res => res.json())
-                    .then(data => setIsUnique(data.isUnique))
-                    .catch(err => console.error(err));
-            }
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [courseCode]);
-
     // Fetch the list of archived courses from the server
     useEffect(() => {
         const fetchArchivedCourses = async () => {
@@ -163,19 +150,15 @@ export default function Courses() {
         }
     };
 
+    // Update the state when the user types in the input fields
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewCourse(prevState => ({
             ...prevState,
             [name]: value
         }));
-        if (name === 'course_code') {
-            // Check for uniqueness and clear error message
-            setCourseCode(value);
-            setErrorMessage('');
-        }
+        setErrorMessage('');
     };
-
     // Close add popup - reset everything
     const closePopupAndResetForm = () => {
         setIsPopupOpen(false);

@@ -21,17 +21,16 @@ export default async function handler(request, response) {
         if (method === 'PUT') {
             const { course_code, course_name, year } = body;
 
-            // Check if the new course_code is unique, excluding the current course
-            const [existingCourses] = await connection.execute('SELECT id FROM tblCourses WHERE course_code = ? AND id <> ?', [course_code, id]);
-            if (existingCourses.length > 0) {
-                return response.status(400).json({ message: 'Course code must be unique.' });
-            }
+            // Perform the update 
+            const [result] = await connection.execute(
+                'UPDATE tblCourses SET course_code = ?, course_name = ?, year = ? WHERE id = ?',
+                [course_code, course_name, year, id]
+            );
 
-            // Perform the update
-            const [result] = await connection.execute('UPDATE tblCourses SET course_code = ?, course_name = ?, year = ? WHERE id = ?', [course_code, course_name, year, id]);
             if (result.affectedRows === 0) {
                 return response.status(404).json({ message: 'Course not found' });
             }
+
             return response.status(200).json({ message: 'Course updated successfully' });
         } else {
             response.setHeader('Allow', ['PUT']);

@@ -288,7 +288,6 @@ export default function Lessons() {
                 },
                 body: JSON.stringify(lessonData),
             });
-
             if (response.ok) {
                 const updatedLessonData = await response.json();
 
