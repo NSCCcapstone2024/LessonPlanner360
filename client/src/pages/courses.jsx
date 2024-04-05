@@ -441,7 +441,7 @@ export default function Courses() {
                 {
                     isPopupOpen && (
                         <div className="fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center">
-                            <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                            <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-8 rounded-lg ${theme === 'dark' ? 'text-white' : 'text-black'} w-full sm:w-auto`}>
                                 <h2 className="text-xl font-bold mb-4">Add New Course</h2>
                                 <div className="mb-6">
                                     <label htmlFor="year" className="block text-sm font-medium mb-1">Year</label>
@@ -467,9 +467,10 @@ export default function Courses() {
                 {
                     isEditPopupOpen && editingCourse && (
                         <div className="fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center">
-                            <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                            <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-8 rounded-lg ${theme === 'dark' ? 'text-white' : 'text-black'} w-full sm:w-auto`}>
                                 <h2 className="text-xl font-bold mb-4">Edit Course</h2>
                                 <div className="mb-6">
+
                                     <label htmlFor="editYear" className="block text-sm font-medium mb-1">Year:</label>
                                     <input type="text" id="editYear" name="year" value={editingCourse.year || ''} onChange={handleEditInputChange} className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
                                 </div>
