@@ -17,6 +17,11 @@ const ThemeLayout = ({ children }) => {
         setTheme(newTheme);
     };
 
+    useEffect(() => {
+        // Update the body class to reflect the theme
+        document.body.classList.toggle('dark', theme === 'dark');
+    }, [theme]);
+
     return (
         <ThemeContext.Provider value={{ theme, toggleTheme }}>
             {/* Theme toggle button */}
