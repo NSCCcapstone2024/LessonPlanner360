@@ -1,11 +1,15 @@
+// _app.js
 
-import '../styles/globals.css'
-import { SessionProvider } from 'next-auth/react'
+import { SessionProvider } from 'next-auth/react';
+import { ThemeLayout } from '../components/layout';
+import '../styles/globals.css';
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   return (
     <SessionProvider session={session}>
-      <Component {...pageProps} />
+      <ThemeLayout>
+        <Component {...pageProps} />
+      </ThemeLayout>
     </SessionProvider>
   );
 }

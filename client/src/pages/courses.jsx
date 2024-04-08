@@ -1,14 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useRouter } from 'next/router';
 import { Icon } from '@iconify-icon/react';
 import { useSession, signOut } from 'next-auth/react';
+import { ThemeContext } from '../components/layout';
 
 export default function Courses() {
     // ---------------------STATE---------------------
-    const [theme, setTheme] = useState('light');
     const { data: session, status } = useSession();
     const username = session?.user?.name;
     const router = useRouter();
+    const { theme } = useContext(ThemeContext);
 
     // POPUPS
     const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
@@ -37,15 +38,12 @@ export default function Courses() {
         course_code: ''
     });
 
-    // Function to toggle between light and dark themes
-    const toggleTheme = () => {
-        const newTheme = theme === 'light' ? 'dark' : 'light';
-        setTheme(newTheme);
-
-        // Update theme class on the body
-        document.body.classList.toggle('dark', newTheme === 'dark');
-        document.body.classList.toggle('light', newTheme === 'light');
-    };
+    useEffect(() => {
+        // Retrieve the theme preference from localStorage
+        const storedTheme = localStorage.getItem('theme') || 'light';
+        // Update the body class to reflect the theme
+        document.body.classList.toggle('dark', storedTheme === 'dark');
+    }, []);
 
     //---------------------FETCH functions---------------------
     // Fetch the list of courses from the server
@@ -378,196 +376,182 @@ export default function Courses() {
 
 
     return (
-        <>
-            <style jsx global>{`
-                body {
-                    background-color: ${theme === 'dark' ? '#222222' : '#ffffff'};
-                    color: ${theme === 'dark' ? '#ffffff' : '#000000'};
-                }
-            `}</style>
-            <div className={`container mx-auto px-4 pt-8`}>
-                {/* Theme toggles */}
-                <div style={{ marginBottom: '1rem' }}>
-                    <button onClick={toggleTheme} className="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded-md text-gray-800 dark:text-gray-200 mt-3" style={{ backgroundColor: theme === 'dark' ? '#374151' : '#d1d5db', color: theme === 'dark' ? '#ffffff' : '#000000' }}>
-                        {theme === 'light' ? 'Dark' : 'Light'} Theme
-                    </button>
+        <div className={`container mx-auto px-4 pt-8`}>
+            <div className={`flex items-center justify-between mb-4 ${theme === 'dark' ? 'bg-gray-800 text-white' : ''}`}>
+                <div title="Logout" className="ml-4" onClick={handleLogout}>
+                    <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" />
                 </div>
-                <div className="flex items-center justify-between mb-4">
-                    <div title="Logout" className="ml-4" onClick={handleLogout}>
-                        <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" />
+                <div>
+                    <p className="text-2xl font-bold">Welcome {username}!</p>
+                </div>
+                <div style={{ marginBottom: '1rem' }} title="Add a new course">
+                    <Icon icon="bx:bxs-plus-circle" className="h-8 w-8 text-gray-500 cursor-pointer mr-7" width="24" height="24" onClick={handleAddCourse} />
+                </div>
+
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {courses.map((course, index) => (
+                    // <div key={index} className="relative bg-gray-100 p-4 rounded-lg">
+                    <div key={index} className={`bg-gray-100 p-4 rounded-lg mb-4 ${theme === 'dark' ? 'bg-gray-800' : ''}`}>
+                        <div className="flex justify-between items-center mb-4">
+                            <div>
+                                {/* Display course_code and year together */}
+                                <p className="text-lg font-semibold">
+                                    <button
+                                        onClick={() => getLessons(course.id, course.course_name)}
+                                        className="text-lg font-semibold hover:underline focus:outline-none"
+                                        style={{ all: 'unset', cursor: 'pointer' }}
+                                    >
+                                        {course.course_code} - {course.year}
+                                    </button>
+                                </p>
+                                {course.course_name}
+                            </div>
+
+                            {/* Edit and Archive icons */}
+                            <div className="flex items-center">
+                                <div className="flex-grow" title='Edit Course' onClick={() => handleEditCourse(course)}>
+                                    <Icon icon="ci:edit-pencil-line-01" width="24" height="24" className="cursor-pointer" />
+                                </div>
+                                <div className="w-px h-6 bg-gray-400 mx-2"></div>
+                                <div className="flex-grow" title='Archive Page' onClick={() => handleArchiveConfirmation(course)}>
+                                    <Icon icon="fluent:archive-arrow-back-16-regular" width="24" height="24" className="text-red-500 cursor-pointer" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-2xl font-bold">Welcome {username}!</p>
+                ))}
+            </div>
+            {
+                isPopupOpen && (
+                    <div className="fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center">
+                        <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-8 rounded-lg ${theme === 'dark' ? 'text-white' : 'text-black'} w-full sm:w-auto`}>
+                            <h2 className="text-xl font-bold mb-4">Add New Course</h2>
+                            <div className="mb-6">
+                                <label htmlFor="year" className="block text-sm font-medium mb-1">Year</label>
+                                <input type="text" id="year" name="year" value={newCourse.year} onChange={handleInputChange} placeholder="Enter year" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96 " maxLength={4} />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="course_code" className="block text-sm font-medium mb-1">Course Code</label>
+                                <input type="text" id="course_code" name="course_code" value={newCourse.course_code} onChange={handleInputChange} placeholder="Enter course code" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" maxLength={200} />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="course_name" className="block text-sm font-medium mb-1">Course Name</label>
+                                <input type="text" id="course_name" name="course_name" value={newCourse.course_name} onChange={handleInputChange} placeholder="Enter course name" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" maxLength={200} />
+                            </div>
+                            <div className="flex justify-between">
+                                <button onClick={handleAddNewCourse} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Add Course</button>
+                                <button onClick={closePopupAndResetForm} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                            </div>
+                            {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
+                        </div>
                     </div>
-                    <div style={{ marginBottom: '1rem' }} title="Add a new course">
-                        <Icon icon="bx:bxs-plus-circle" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" onClick={handleAddCourse} />
+                )
+            }
+            {
+                isEditPopupOpen && editingCourse && (
+                    <div className="fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center">
+                        <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-8 rounded-lg ${theme === 'dark' ? 'text-white' : 'text-black'} w-full sm:w-auto`}>
+                            <h2 className="text-xl font-bold mb-4">Edit Course</h2>
+                            <div className="mb-6">
+
+                                <label htmlFor="editYear" className="block text-sm font-medium mb-1">Year:</label>
+                                <input type="text" id="editYear" name="year" value={editingCourse.year || ''} onChange={handleEditInputChange} className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="editcourse_code" className="block text-sm font-medium mb-1">Course Code</label>
+                                <input type="text" id="editcourse_code" name="course_code" value={editingCourse.course_code || ''} onChange={handleEditInputChange} className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="editcourse_name" className="block text-sm font-medium mb-1">Course Name</label>
+                                <input type="text" id="editcourse_name" name="course_name" value={editingCourse.course_name || ''} onChange={handleEditInputChange} className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
+                            </div>
+                            <div className="flex justify-between">
+                                <button onClick={handleUpdateCourse} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Update Course</button>
+                                <button onClick={closeEditPopupAndReset} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                            </div>
+                            {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
+                        </div>
                     </div>
-
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {courses.map((course, index) => (
-                        // <div key={index} className="relative bg-gray-100 p-4 rounded-lg">
-                        <div key={index} className={`bg-gray-100 p-4 rounded-lg mb-4 ${theme === 'dark' ? 'bg-gray-800' : ''}`}>
-                            <div className="flex justify-between items-center mb-4">
-                                <div>
-                                    {/* Display course_code and year together */}
-                                    <p className="text-lg font-semibold">
-                                        <button
-                                            onClick={() => getLessons(course.id, course.course_name)}
-                                            className="text-lg font-semibold hover:underline focus:outline-none"
-                                            style={{ all: 'unset', cursor: 'pointer' }}
-                                        >
-                                            {course.course_code} - {course.year}
-                                        </button>
-                                    </p>
-                                    {course.course_name}
-                                </div>
-
-                                {/* Edit and Archive icons */}
-                                <div className="flex items-center">
-                                    <div className="flex-grow" title='Edit Course' onClick={() => handleEditCourse(course)}>
-                                        <Icon icon="ci:edit-pencil-line-01" width="24" height="24" className="cursor-pointer" />
-                                    </div>
-                                    <div className="w-px h-6 bg-gray-400 mx-2"></div>
-                                    <div className="flex-grow" title='Archive Page' onClick={() => handleArchiveConfirmation(course)}>
-                                        <Icon icon="fluent:archive-arrow-back-16-regular" width="24" height="24" className="text-red-500 cursor-pointer" />
-                                    </div>
-                                </div>
+                )
+            }
+            {
+                isArchivePopupOpen && archivingCourse && (
+                    <div className="fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center">
+                        <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                            <h2 className="text-xl font-bold mb-4">Archive Course</h2>
+                            <p>Are you sure you want to archive {archivingCourse.course_code} - {archivingCourse.year}?</p>
+                            <div className="flex justify-between mt-4">
+                                <button onClick={handleConfirmArchive} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes</button>
+                                <button onClick={handleCancelArchive} className="bg-gray-500 text-white px-4 py-2 rounded-md">No</button>
                             </div>
                         </div>
-                    ))}
-                </div>
-                {
-                    isPopupOpen && (
-                        <div className="fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center">
-                            <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-8 rounded-lg ${theme === 'dark' ? 'text-white' : 'text-black'} w-full sm:w-auto`}>
-                                <h2 className="text-xl font-bold mb-4">Add New Course</h2>
-                                <div className="mb-6">
-                                    <label htmlFor="year" className="block text-sm font-medium mb-1">Year</label>
-                                    <input type="text" id="year" name="year" value={newCourse.year} onChange={handleInputChange} placeholder="Enter year" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96 " maxLength={4} />
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="course_code" className="block text-sm font-medium mb-1">Course Code</label>
-                                    <input type="text" id="course_code" name="course_code" value={newCourse.course_code} onChange={handleInputChange} placeholder="Enter course code" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" maxLength={200} />
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="course_name" className="block text-sm font-medium mb-1">Course Name</label>
-                                    <input type="text" id="course_name" name="course_name" value={newCourse.course_name} onChange={handleInputChange} placeholder="Enter course name" className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" maxLength={200} />
-                                </div>
-                                <div className="flex justify-between">
-                                    <button onClick={handleAddNewCourse} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Add Course</button>
-                                    <button onClick={closePopupAndResetForm} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-                                </div>
-                                {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
-                            </div>
-                        </div>
-                    )
-                }
-                {
-                    isEditPopupOpen && editingCourse && (
-                        <div className="fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center">
-                            <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-8 rounded-lg ${theme === 'dark' ? 'text-white' : 'text-black'} w-full sm:w-auto`}>
-                                <h2 className="text-xl font-bold mb-4">Edit Course</h2>
-                                <div className="mb-6">
+                    </div>
+                )
+            }
+            <div className="mt-8">
+                <h2 className="text-xl font-bold mb-4">Archived Courses</h2>
+                {archivedCourses.map((course, index) => (
+                    <div key={index} className={`bg-gray-100 p-4 rounded-lg mb-4 ${theme === 'dark' ? 'bg-gray-800' : ''}`}>
+                        {/* Display archived course code, archived year (if available), and course name */}
+                        <p className="text-lg font-semibold">
+                            <span className={`text-${theme === 'dark' ? 'white' : 'black'}`}>{course.course_code} - {course.archived_year ? <span className={`text-${theme === 'dark' ? 'white' : 'black'}`}>{course.archived_year}</span> : new Date().getFullYear()}</span>
+                        </p>
+                        <span className={`text-${theme === 'dark' ? 'white' : 'black'}`}><p>{course.course_name}</p></span>
 
-                                    <label htmlFor="editYear" className="block text-sm font-medium mb-1">Year:</label>
-                                    <input type="text" id="editYear" name="year" value={editingCourse.year || ''} onChange={handleEditInputChange} className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="editcourse_code" className="block text-sm font-medium mb-1">Course Code</label>
-                                    <input type="text" id="editcourse_code" name="course_code" value={editingCourse.course_code || ''} onChange={handleEditInputChange} className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
-                                </div>
-                                <div className="mb-6">
-                                    <label htmlFor="editcourse_name" className="block text-sm font-medium mb-1">Course Name</label>
-                                    <input type="text" id="editcourse_name" name="course_name" value={editingCourse.course_name || ''} onChange={handleEditInputChange} className="border-gray-300 text-gray-900 border rounded-md p-2 block w-96" />
-                                </div>
-                                <div className="flex justify-between">
-                                    <button onClick={handleUpdateCourse} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Update Course</button>
-                                    <button onClick={closeEditPopupAndReset} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-                                </div>
-                                {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
-                            </div>
+                        <div className="mt-2 flex justify-end space-x-2">
+                            <button
+                                onClick={() => handleDeleteConfirmation(course)}
+                                className={`px-4 py-2 rounded-md ${theme === 'dark' ? 'bg-red-900 text-white' : 'bg-red-400 text-white'}`}
+                            >
+                                Delete
+                            </button>
+                            <button
+                                onClick={() => handleRetrieveCourse(course)}
+                                className={`px-4 py-2 rounded-md ${theme === 'dark' ? 'bg-green-900 text-white' : 'bg-green-400 text-white'}`}
+                            >
+                                Retrieve
+                            </button>
+                            <button
+                                onClick={() => handleCopyConfirmation(course)}
+                                className={`px-4 py-2 rounded-md ${theme === 'dark' ? 'bg-blue-900 text-white' : 'bg-blue-400 text-white'}`}
+                            >
+                                Copy
+                            </button>
                         </div>
-                    )
-                }
-                {
-                    isArchivePopupOpen && archivingCourse && (
-                        <div className="fixed top-0 left-0 w-full h-full bg-opacity-50 flex justify-center items-center">
-                            <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg${theme === 'dark' ? 'text-white' : 'text-black'}`}>
-                                <h2 className="text-xl font-bold mb-4">Archive Course</h2>
-                                <p>Are you sure you want to archive {archivingCourse.course_code} - {archivingCourse.year}?</p>
-                                <div className="flex justify-between mt-4">
-                                    <button onClick={handleConfirmArchive} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes</button>
-                                    <button onClick={handleCancelArchive} className="bg-gray-500 text-white px-4 py-2 rounded-md">No</button>
-                                </div>
-                            </div>
-                        </div>
-                    )
-                }
-                <div className="mt-8">
-                    <h2 className="text-xl font-bold mb-4">Archived Courses</h2>
-                    {archivedCourses.map((course, index) => (
-                        <div key={index} className={`bg-gray-100 p-4 rounded-lg mb-4 ${theme === 'dark' ? 'bg-gray-800' : ''}`}>
-                            {/* Display archived course code, archived year (if available), and course name */}
-                            <p className="text-lg font-semibold">
-                                <span className={`text-${theme === 'dark' ? 'white' : 'black'}`}>{course.course_code} - {course.archived_year ? <span className={`text-${theme === 'dark' ? 'white' : 'black'}`}>{course.archived_year}</span> : new Date().getFullYear()}</span>
-                            </p>
-                            <span className={`text-${theme === 'dark' ? 'white' : 'black'}`}><p>{course.course_name}</p></span>
+                    </div>
+                ))}
+            </div>
 
-                            <div className="mt-2 flex justify-end space-x-2">
-                                <button
-                                    onClick={() => handleDeleteConfirmation(course)}
-                                    className={`px-4 py-2 rounded-md ${theme === 'dark' ? 'bg-red-900 text-white' : 'bg-red-400 text-white'}`}
-                                >
-                                    Delete
-                                </button>
-                                <button
-                                    onClick={() => handleRetrieveCourse(course)}
-                                    className={`px-4 py-2 rounded-md ${theme === 'dark' ? 'bg-green-900 text-white' : 'bg-green-400 text-white'}`}
-                                >
-                                    Retrieve
-                                </button>
-                                <button
-                                    onClick={() => handleCopyConfirmation(course)}
-                                    className={`px-4 py-2 rounded-md ${theme === 'dark' ? 'bg-blue-900 text-white' : 'bg-blue-400 text-white'}`}
-                                >
-                                    Copy
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {
-                    isCopyConfirmationOpen && copyingCourse && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                            <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg shadow-lg${theme === 'dark' ? 'bg-gray-800' : ''}`}>
-                                <h2 className="text-xl font-bold mb-4">Copy Course</h2>
-                                <p>Do you want to make a duplicate copy of {copyingCourse.course_name}?</p>
-                                <div className="flex justify-between mt-4">
-                                    <button onClick={() => handleCopyCourse(copyingCourse)} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Yes</button>
-                                    <button onClick={closeCopyConfirmation} className="bg-gray-500 text-white px-4 py-2 rounded-md">No</button>
-                                </div>
-                            </div>
-                        </div>
-                    )
-                }
-
-                {isDeletePopupOpen && (
+            {
+                isCopyConfirmationOpen && copyingCourse && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
                         <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg shadow-lg${theme === 'dark' ? 'bg-gray-800' : ''}`}>
-                            <h2 className="text-xl font-bold mb-4">Delete Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
-                            <p className='text-lg'>Are you sure you want to delete this course and all of its contents: {deletingCourse?.course_name}?</p>
-                            <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!!</p>
+                            <h2 className="text-xl font-bold mb-4">Copy Course</h2>
+                            <p>Do you want to make a duplicate copy of {copyingCourse.course_name}?</p>
                             <div className="flex justify-between mt-4">
-                                <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
-                                <button onClick={closeDeletePopup} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                                <button onClick={() => handleCopyCourse(copyingCourse)} className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Yes</button>
+                                <button onClick={closeCopyConfirmation} className="bg-gray-500 text-white px-4 py-2 rounded-md">No</button>
                             </div>
                         </div>
                     </div>
-                )}
-            </div >
-        </>
+                )
+            }
+
+            {isDeletePopupOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                    <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg shadow-lg${theme === 'dark' ? 'bg-gray-800' : ''}`}>
+                        <h2 className="text-xl font-bold mb-4">Delete Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
+                        <p className='text-lg'>Are you sure you want to delete this course and all of its contents: {deletingCourse?.course_name}?</p>
+                        <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!!</p>
+                        <div className="flex justify-between mt-4">
+                            <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
+                            <button onClick={closeDeletePopup} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }
