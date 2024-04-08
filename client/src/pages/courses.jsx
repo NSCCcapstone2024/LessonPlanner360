@@ -38,6 +38,7 @@ export default function Courses() {
         course_code: ''
     });
 
+    // use effect for themes
     useEffect(() => {
         // Retrieve the theme preference from localStorage
         const storedTheme = localStorage.getItem('theme') || 'light';
