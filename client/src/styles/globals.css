@@ -5,3 +5,17 @@
 body {
     color: #035074;
 }
+
+/* Light theme */
+.light {
+    background-color: #ffffff;
+    color: #035074;
+    /* Text color for light theme */
+}
+
+/* Dark theme */
+.dark {
+    background-color: #222222;
+    color: #ffffff;
+    /* Text color for dark theme */
+}
