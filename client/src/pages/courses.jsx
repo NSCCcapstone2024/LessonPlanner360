@@ -38,6 +38,7 @@ export default function Courses() {
         course_code: ''
     });
 
+    // use effect for themes
     useEffect(() => {
         // Retrieve the theme preference from localStorage
         const storedTheme = localStorage.getItem('theme') || 'light';
@@ -379,13 +380,13 @@ export default function Courses() {
         <div className={`container mx-auto px-4 pt-8`}>
             <div className={`flex items-center justify-between mb-4 ${theme === 'dark' ? 'bg-gray-800 text-white' : ''}`}>
                 <div title="Logout" className="ml-4" onClick={handleLogout}>
-                    <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer" width="24" height="24" />
+                    <Icon icon="fa-solid:sign-out-alt" className="h-8 w-8 text-gray-500 cursor-pointer mt-3" width="24" height="24" />
                 </div>
                 <div>
                     <p className="text-2xl font-bold">Welcome {username}!</p>
                 </div>
                 <div style={{ marginBottom: '1rem' }} title="Add a new course">
-                    <Icon icon="bx:bxs-plus-circle" className="h-8 w-8 text-gray-500 cursor-pointer mr-7" width="24" height="24" onClick={handleAddCourse} />
+                    <Icon icon="bx:bxs-plus-circle" className="h-8 w-8 text-gray-500 cursor-pointer mr-7 mt-6" width="24" height="24" onClick={handleAddCourse} />
                 </div>
 
             </div>
@@ -496,9 +497,10 @@ export default function Courses() {
                     <div key={index} className={`bg-gray-100 p-4 rounded-lg mb-4 ${theme === 'dark' ? 'bg-gray-800' : ''}`}>
                         {/* Display archived course code, archived year (if available), and course name */}
                         <p className="text-lg font-semibold">
-                            <span className={`text-${theme === 'dark' ? 'white' : 'black'}`}>{course.course_code} - {course.archived_year ? <span className={`text-${theme === 'dark' ? 'white' : 'black'}`}>{course.archived_year}</span> : new Date().getFullYear()}</span>
+                            {course.course_code} - {course.archived_year || new Date().getFullYear()}
+
                         </p>
-                        <span className={`text-${theme === 'dark' ? 'white' : 'black'}`}><p>{course.course_name}</p></span>
+                        <p>{course.course_name}</p>
 
                         <div className="mt-2 flex justify-end space-x-2">
                             <button
@@ -539,19 +541,21 @@ export default function Courses() {
                 )
             }
 
-            {isDeletePopupOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                    <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg shadow-lg${theme === 'dark' ? 'bg-gray-800' : ''}`}>
-                        <h2 className="text-xl font-bold mb-4">Delete Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
-                        <p className='text-lg'>Are you sure you want to delete this course and all of its contents: {deletingCourse?.course_name}?</p>
-                        <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!!</p>
-                        <div className="flex justify-between mt-4">
-                            <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
-                            <button onClick={closeDeletePopup} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+            {
+                isDeletePopupOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                        <div className={`bg-${theme === 'dark' ? 'gray-800' : 'gray-300'} p-20 rounded-lg shadow-lg${theme === 'dark' ? 'bg-gray-800' : ''}`}>
+                            <h2 className="text-xl font-bold mb-4">Delete Course<Icon icon="ph:flag-fill" className="ml-2 text-red-500" width="24" height="24" /></h2>
+                            <p className='text-lg'>Are you sure you want to delete this course and all of its contents: {deletingCourse?.course_name}?</p>
+                            <p className='text-lg text-red-800 font-black mb-8'>Note: This action cannot be undone!!</p>
+                            <div className="flex justify-between mt-4">
+                                <button onClick={handleConfirmDelete} className="bg-red-500 text-white px-4 py-2 rounded-md mr-2">Yes, Delete</button>
+                                <button onClick={closeDeletePopup} className="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
