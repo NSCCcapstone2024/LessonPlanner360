@@ -269,6 +269,8 @@ export default function Lessons() {
 
     // handle the update lesson function
     const handleUpdateLesson = async () => {
+        console.log('Update Lesson button clicked');
+
         // validate required fields
         if (!editingLesson || !editingLesson.unit_number || !editingLesson.week || !editingLesson.class_ID) {
             setErrorMessage('Unit Number, Week, and Class ID are required.');
@@ -279,6 +281,8 @@ export default function Lessons() {
             ...editingLesson,
             material: uploadedFilePath || editingLesson.material,
         };
+
+        console.log('Sending update request...');
 
         try {
             const response = await fetch(`/api/lessons/update/${editingLesson.id}`, {
