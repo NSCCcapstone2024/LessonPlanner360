@@ -7,6 +7,7 @@ export default async function handler(request, response) {
 
     // Extract the lessonId from the URL parameter
     const { lessonId } = request.query;
+    console.log('Lesson ID:', lessonId); // Add this console.log to check the lessonId
 
     // Extract the data from the request body
     const {
@@ -20,6 +21,7 @@ export default async function handler(request, response) {
         notes,
         status
     } = request.body;
+    console.log('Request body:', request.body); // Add this console.log to check the request body
 
     try {
         const connection = await mysql.createConnection({
@@ -28,6 +30,7 @@ export default async function handler(request, response) {
             password: process.env.DB_PASSWORD,
             database: process.env.DB_NAME
         });
+        console.log('Database connection successful'); // Add this console.log to check the database connection
 
         // Update the existing lesson in the database
         const [result] = await connection.execute(
@@ -55,6 +58,7 @@ export default async function handler(request, response) {
                 lessonId
             ]
         );
+        console.log('SQL UPDATE query executed'); // Add this console.log to check the execution of SQL query
 
         await connection.end();
 
